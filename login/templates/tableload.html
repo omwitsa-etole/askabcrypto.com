@@ -17,7 +17,7 @@
 		{% if p1 == "Undefined" or p2[i] == "Undefined" %}
 			<td style="background-color: #FF4500;">No data</td>
 		{% else %}
-			<td>{{(p1/p2[i])*100}}</td>
+			<td>{{((p1/p2[i])*100)-100}}</td>
 		{%endif%}
 	{% endfor %}
 	</tr>
