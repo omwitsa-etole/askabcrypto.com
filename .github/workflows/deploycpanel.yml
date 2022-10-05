@@ -5,20 +5,22 @@ jobs:
     name: 🎉 Deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v4
-      - name: Set up Python
-        with:
-          python-version: '3.x'
-      - name: Install dependencies
-        run: python -m pip install --upgrade pip setuptools wheel
-      - name: Install requirements
-        run: pip install -r requirements.txt
-      - name: pip test
-        run: pip test
-      - name: 📂 Sync files
-        uses: SamKirkland/FTP-Deploy-Action@4.3.2
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: python -m pip install --upgrade pip setuptools wheel
+    - name: Test with pytest
+      run: |
+        pytest
+         python -m pip install --upgrade pip
+         pip install -r requirements.txt
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@4.3.2
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
