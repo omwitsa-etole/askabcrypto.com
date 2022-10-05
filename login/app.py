@@ -23,7 +23,7 @@ chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument('--headless')
 driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
-conn = sqlite3.connect('database.sqlite3')
+conn = sqlite3.connect('coinmarketcap-database.sqlite3')
 conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
 conn.close()
  
@@ -62,7 +62,7 @@ def login():
 	if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
 		username = request.form['username']
 		password = request.form['password']
-		with sqlite3.connect("database.sqlite3") as con:
+		with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
 			cursor = con.cursor()
 			cursor.execute('SELECT * FROM accounts WHERE username OR email = ? AND password = ?',[username, password])
 			account = cursor.fetchone()
@@ -86,7 +86,7 @@ def register():
 			password = request.form['password']
 			password2 = request.form['password2']
 			email = request.form['email']
-			with sqlite3.connect("database.sqlite3") as con:
+			with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
 				cursor = con.cursor()
 				cursor.execute('SELECT * FROM accounts WHERE email = ?', [email])
 				account = cursor.fetchone()
@@ -324,7 +324,7 @@ def settings():
 			password1 = request.form['password-change']
 			password2 = request.form['password-change-confirm']
 			if password1 == password2:
-				with sqlite3.connect("database.sqlite3") as con:
+				with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
 					cursor = con.cursor()
 					cursor.execute('SELECT * FROM accounts WHERE username OR email = ? AND password = ?',[username, password])
 					account = cursor.fetchone()
