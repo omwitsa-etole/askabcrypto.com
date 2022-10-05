@@ -1,0 +1,84 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title> Register </title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">   
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> 
+    <style>      
+	body{
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		background-color:#1E90FF;
+	}
+	.msg{
+		padding: 5px 60px;
+		width: 50%;
+		margin-left: 25%;
+		margin-top: 2%;
+		height: 40px;
+		color: white;
+	 	background-color: #FFA500;
+		text-align: left;
+		text-align: justify;
+		overflow: hidden;
+		position: relative;
+	}
+  
+    </style>
+    </head>
+    <body></br></br>
+	{% if msg != "msg" %}
+		<div class="msg">{{ msg }}<a href="javascript:void(0)" style="position: absolute;right: 2%;top: 0;cursor: pointer;color: red;zoom: 100%;" onclick="this.parentElement.style.display = 'none';">&times</a></div>
+	{%endif%}
+       <div class="column is-4 is-offset-4">
+    <h3 class="title">Sign Up</h3>
+    <div class="box">
+	
+        <form method="POST" action="/account/signup">
+            <div class="field">
+                <div class="control">
+                    <input class="input is-large" type="text" name="username" placeholder="username" autofocus="">
+                </div>
+            </div>
+
+	  <div class="field">
+                <div class="control">
+                    <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="">
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    <input class="input is-large" type="password" name="password" placeholder="Password">
+                </div>
+            </div>
+	   <div class="field">
+                <div class="control">
+                    <input class="input is-large" type="password" name="password2" placeholder="confirm Password">
+                </div>
+            </div>
+
+            <button class="button is-block is-info is-large is-fullwidth">Sign Up</button>
+        </form>
+	<p style="font-size: 18px;">Already have an account, <a href="/account/login" style="color: green;text-decoration: none;cursor: pointer;">Log in</a></p>
+    </div>
+</div>
+    </body>
+	<script>
+	$(document).ready(function() {
+	$("#page_load").load("/f");
+	
+	$('#rf').on('submit',function (e) {
+	     $.ajax({
+	      type: 'post',
+	      url: '/account/signup',
+	      data: $('#rf').serialize()
+	      });
+	      return False;
+	 });
+
+});
+	</script>
+</html>

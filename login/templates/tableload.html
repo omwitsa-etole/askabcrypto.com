@@ -1,0 +1,55 @@
+<h2 style="margin-left: 10%;">Pair: {{ pir }};	Percentage Difference(%)</h2><br>
+<table border="1px" style="border-collapse: collapse;" id="f-table">
+<tr>
+{% for i in range(0, m-1)%}
+	{% if i == 0 %}
+		<th></th>
+	{%endif%}
+	<th>{{ source[i] }}</th>
+{% endfor %}
+</tr>
+{%for i in range(0, m-1)%}
+	<tr>
+	{% for i in range(0, m-1) %}
+		{%if i == 0%}
+			<td>{{s[i]}}</td>
+		{%endif%}
+		{% if p1 == "Undefined" or p2[i] == "Undefined" %}
+			<td style="background-color: #FF4500;">No data</td>
+		{% else %}
+			<td>{{(p1/p2[i])}}</td>
+		{%endif%}
+	{% endfor %}
+	</tr>
+{%endfor%}
+</table><br><br>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+   }
+$(document).ready(function() {
+	sleep(2000).then(() => {
+		const table = document.getElementById('f-table');
+		const cells = table.getElementsByTagName('td');
+		let text = ""
+		for (const cell of cells) {
+			text = cell.innerText;
+			console.log(text)
+			if(text != "Undefined" && text != "No data"){
+				text = parseInt(text);
+				if(text > 10){
+					cell.setAttribute("style", "background-color:green;"); 
+				}else if(text >= 5 && text <= 10){
+					cell.setAttribute("style", "background-color: #6B8E23;"); 
+				}else if(text >= 1 && text <= 4){
+					cell.setAttribute("style", "background-color:#7CFC00;"); 
+				}else if(text < 1){
+					cell.setAttribute("style", "background-color:#98FB98;"); 
+				}
+							
+			}
+		}
+	})
+});
+</script>
