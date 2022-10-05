@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-#import MySQLdb.cursors
 import re
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager as CM
@@ -232,14 +231,6 @@ def load(driver, crc, pir):
 				except:
 					pass
 			soup = table.get_attribute('innerHTML') 
-			#page_source = driver.page_source
-			#soup = BeautifulSoup(page_source.content, 'html.parser')
-			#str(soup))
-			#dfs = pd.read_html(driver.page_source)
-			#table = soup.find('table', { 'class' : 'h7vnx2-2 cUnNjQ cmc-table' })
-			#list_table = tableDataText(table)
-			#dftable = pd.DataFrame(list_table[1:], columns=list_table[0])
-			#html = dftable.to_html()
 			text_file = open("login/templates/load.html", "w")
 			text_file.write(soup)
 			text_file.close()
@@ -285,8 +276,9 @@ def load(driver, crc, pir):
 						found = 1
 					else:
 						if str(n) != "None" and "/" in str(n):
-							src.append(str(n))
-							found2 = 1
+							if n not in src:
+								src.append(str(n))
+								found2 = 1
 
 			cont = 0
 			table = driver.find_elements(By.TAG_NAME, "tr")
@@ -306,7 +298,6 @@ def load(driver, crc, pir):
 			text_file.write("</tbody></table>")
 			text_file.close()
 			load_file = "loadpair.html"
-		#table = driver.find_elements("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
 		time.sleep(2)
 		return
 		driver.close()
