@@ -125,11 +125,10 @@ def table_load():
 	global src
 	global pr
 	global currency
-	if len(p) == 0: 
-		p1 = "Undefined"
-	else: 
-		p1 = float(p[0])
+	p1 = []
 	p2 = []
+	for i in range(0, len(s)-1):
+		p2.append(float(p[i]))
 	for i in range(0, len(src)-1):
 		p2.append(float(pr[i]))
 	return render_template("tableload.html",m = len(src), n = len(p), p = p, s = s, pir=currency, p1 = p1, p2 = p2, source = src)
@@ -167,6 +166,7 @@ def home():
 	source = []
 	driver.get("https://coinmarketcap.com")
 	time.sleep(1)
+	
 	vx = driver.find_elements(By.TAG_NAME, "a")
 	time.sleep(1)
 	for v in vx:
@@ -212,9 +212,9 @@ def load(driver, crc, pir):
 			break
 		count += 1	
 		url = "https://coinmarketcap.com/currencies/"+crc+"/"
-		driver.get(url+"markets/")
-		#driver.refresh()
-		time.sleep(2)
+		driver.get(url)
+		time.sleep(1)		
+		driver.execute_script("window.scrollTo(0, 1700)")
 		vx = driver.find_elements(By.TAG_NAME, "a")
 		for v in vx:
 			if "trade" in str(v.get_attribute('href')):
@@ -223,15 +223,20 @@ def load(driver, crc, pir):
 				n = len(k)
 				pair.append(k[n-1])
 		#page_source = requests.get(url+"markets/") 
+		for v in vx:
+			if "arkets" in str(v.get_attribute('href')):
+				v.click()
+				break
+		time.sleep(2)
+		driver.get(url+"markets/")
+		#driver.refresh()
 		
 		if pir == "":
 			while True:
 				try:
-					driver.execute_script("window.scrollTo(0, 1700)") 
+					driver.execute_script("window.scrollTo(0, 1700)")
 					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
-					time.sleep(1)
 					soup = table.get_attribute('innerHTML') 
-					time.sleep(2)
 					break
 				except:
 					pass			
@@ -267,20 +272,26 @@ def load(driver, crc, pir):
 				sup = BeautifulSoup(contents, 'html.parser')
 				li = sup.findAll('td')
 				for l in li:
-					k = l.previous_sibling 
-					f = l.find_next_sibling("td")
-					if f is not None or f != "None":
-						f = manual_replace(f, '', 0)
-						pr.append(float(f))
-						if pir in str(l.text):
+					k = l.previous_sibling
+					if pir in l.text:
+						f = l.find_next_sibling("td") 
+						g = f.text
+						g = manual_replace(g, '', 0)
+						if f is not None or f != "None":
+							p.append(g)
 							s.append(str(pir))
-							p.append(float(f))
-							src.append(str(k.text))
+					if  "/" in l.text:
+						f = l.find_next_sibling("td") 
+						g = f.text
+						g = manual_replace(g, '', 0)
+						pr.append(g)
+						src.append(str(k.text))
 			cont = 0
-			with open('login/templates/file.html', 'r') as f:
+			with open('login/templates/load.html', 'r') as f:
 				contents = f.read()
 
 				sup = BeautifulSoup(contents, 'html.parser')
+				ft.write("<table><tbody>")
 				ft.write(str(sup.tr))
 				for child in sup.recursiveChildGenerator():
 					if child.name == "tr":
@@ -292,7 +303,6 @@ def load(driver, crc, pir):
 			ft.write("</tbody></table>")
 			ft.close()
 			load_file = "loadpair.html"
-		time.sleep(1)
 		return
 		driver.close()
 		break
