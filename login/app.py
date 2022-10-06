@@ -168,6 +168,7 @@ def home():
 	driver.get("https://coinmarketcap.com")
 	time.sleep(1)
 	vx = driver.find_elements(By.TAG_NAME, "a")
+	time.sleep(1)
 	for v in vx:
 		if "https://coinmarketcap.com/currencies/" in str(v.get_attribute('href')):
 			k = str(v.get_attribute('href'))
@@ -213,7 +214,7 @@ def load(driver, crc, pir):
 		url = "https://coinmarketcap.com/currencies/"+crc+"/"
 		driver.get(url+"markets/")
 		#driver.refresh()
-		time.sleep(5)
+		time.sleep(2)
 		vx = driver.find_elements(By.TAG_NAME, "a")
 		for v in vx:
 			if "trade" in str(v.get_attribute('href')):
@@ -226,79 +227,72 @@ def load(driver, crc, pir):
 		if pir == "":
 			while True:
 				try:
+					driver.execute_script("window.scrollTo(0, 1700)") 
 					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
+					time.sleep(1)
+					soup = table.get_attribute('innerHTML') 
+					time.sleep(2)
 					break
 				except:
-					pass
-			soup = table.get_attribute('innerHTML') 
-			text_file = open("login/templates/load.html", "w")
+					pass			
+			text_file = open("login/templates/file.html", "w")
 			text_file.write(soup)
 			text_file.close()
+			try:
+				os.remove('login/templates/load.html')
+			except:
+				pass
+			ft = open("login/templates/load.html", "a+")
+			ft.write("<table>")
+			with open('login/templates/file.html', 'r') as f:
+				contents = f.read()
+
+				sup = BeautifulSoup(contents, 'html.parser')
+				for child in sup.recursiveChildGenerator():
+					if child.name == "tr":
+						if "Recently" in child.text:
+							ft.write(str(child))
+			ft.write("</table>")
 			load_file = "load.html"
 		else:
 			try:
 				os.remove('login/templates/loadpair.html')
 			except:
 				pass
-			while True:
-				try:
-					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
-					break
-				except:
-					pass
-			text_file = open("login/templates/loadpair.html", "a+")
-			sup = BeautifulSoup(table.get_attribute('innerHTML') , 'html.parser')
-			
-			found = 0
-			found2 = 0
-			for section in sup.findAll('td'):
-				nextNode = section
-				#while True:
-				nextNode = nextNode.nextSibling
-				try:
-					tag_name = nextNode.name
-				except AttributeError:
-					tag_name = ""
-				if tag_name == "td":
-					n = nextNode.string
-					pir = pir.replace("_", "/")
-					if found == 1:
-						n = manual_replace(n, '', 0)
-						p.append(str(n))
-						found = 0
-					if found2 == 1:
-						n = manual_replace(n, '', 0)
-						pr.append(str(n))
-						found2 = 0
-					if str(n) == str(pir):
-						s.append(str(pir))
-						#p.append(str(n))
-						found = 1
-					else:
-						if str(n) != "None" and "/" in str(n):
-							if n not in src:
-								src.append(str(n))
-								found2 = 1
+			ft = open("login/templates/loadpair.html", "a+")
+			#table = driver.find_element("xpath", "//div[@class='h7vnx2-1 kUATHk']")
+			with open('login/templates/load.html', 'r') as f:
+				contents = f.read()
 
+				sup = BeautifulSoup(contents, 'html.parser')
+				li = sup.findAll('td')
+				for l in li:
+					k = l.previous_sibling 
+					f = l.find_next_sibling("td")
+					if f is not None or f != "None":
+						f = manual_replace(f, '', 0)
+						pr.append(float(f))
+						if pir in str(l.text):
+							s.append(str(pir))
+							p.append(float(f))
+							src.append(str(k.text))
 			cont = 0
-			table = driver.find_elements(By.TAG_NAME, "tr")
-			text_file.write("<table style='border-collapse:;'><tbody>")	
-			#pir.replace('/', '_')	
-			for t in table:
-				if pir in t.text:
-					cont = 1
-					#print("here")
-					#print(t.text)
-					soup = t.get_attribute('innerHTML') 
-					text_file.write("<tr>")
-					text_file.write(soup)
-					text_file.write("</tr>")
+			with open('login/templates/file.html', 'r') as f:
+				contents = f.read()
+
+				sup = BeautifulSoup(contents, 'html.parser')
+				ft.write(str(sup.tr))
+				for child in sup.recursiveChildGenerator():
+					if child.name == "tr":
+						if pir in child.text:
+							cont = 1
+							ft.write(str(child))
 			if(cont == 0):		
-				text_file.write("<center><p style='font-size: 20px;margin-top: 5%;'>No data found from pair</p></center>")
-			text_file.write("</tbody></table>")
-			text_file.close()
+				ft.write("<center><p style='font-size: 20px;margin-top: 5%;'>No data found from pair</p></center>")
+			ft.write("</tbody></table>")
+			ft.close()
 			load_file = "loadpair.html"
-		time.sleep(2)
+		time.sleep(1)
 		return
 		driver.close()
 		break
