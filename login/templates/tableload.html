@@ -8,7 +8,7 @@
 	<th>{{ source[i] }}</th>
 {% endfor %}
 </tr>
-{%for i in range(0, m-1)%}
+{%for j in range(0, 7-1)%}
 	<tr>
 	{% for i in range(0, m-1) %}
 		{%if i == 0%}
@@ -17,7 +17,7 @@
 		{% if p1 == "Undefined" or p2[i] == "Undefined" %}
 			<td style="background-color: #FF4500;">No data</td>
 		{% else %}
-			<td>{{((p1[i]/p2[i])*100)-100}}</td>
+			<td>{{((p2[i]/p1[j])*100)-100}}</td>
 		{%endif%}
 	{% endfor %}
 	</tr>

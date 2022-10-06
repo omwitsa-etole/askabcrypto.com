@@ -128,7 +128,7 @@ def table_load():
 	p1 = []
 	p2 = []
 	for i in range(0, len(s)-1):
-		p2.append(float(p[i]))
+		p1.append(float(p[i]))
 	for i in range(0, len(src)-1):
 		p2.append(float(pr[i]))
 	return render_template("tableload.html",m = len(src), n = len(p), p = p, s = s, pir=currency, p1 = p1, p2 = p2, source = src)
@@ -226,9 +226,9 @@ def load(driver, crc, pir):
 		driver.get(url+"markets/")
 		#driver.refresh()
 		if pir == "":
-			driver.execute_script("window.scrollTo(0, 1700)")
 			while True:
 				try:
+					driver.execute_script("window.scrollTo(0, 1500)")
 					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
 					time.sleep(1)
 					soup = table.get_attribute('innerHTML') 
