@@ -216,30 +216,26 @@ def load(driver, crc, pir):
 		time.sleep(1)		
 		driver.execute_script("window.scrollTo(0, 1700)")
 		vx = driver.find_elements(By.TAG_NAME, "a")
-		for v in vx:
-			if "trade" in str(v.get_attribute('href')):
-				k = str(v.get_attribute('href'))
-				k = k.split('/')
-				n = len(k)
-				pair.append(k[n-1])
 		#page_source = requests.get(url+"markets/") 
-		for v in vx:
-			if "arkets" in str(v.get_attribute('href')):
-				v.click()
-				break
-		time.sleep(2)
+		try:
+			driver.find_element("xpath", "//div[@class='']").click()
+			break
+		except:
+			pass
 		driver.get(url+"markets/")
 		#driver.refresh()
-		
 		if pir == "":
+			driver.execute_script("window.scrollTo(0, 1700)")
 			while True:
 				try:
-					driver.execute_script("window.scrollTo(0, 1700)")
 					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
+					time.sleep(1)
 					soup = table.get_attribute('innerHTML') 
+					time.sleep(2)
 					break
 				except:
-					pass			
+					pass	
+					
 			text_file = open("login/templates/file.html", "w")
 			text_file.write(soup)
 			text_file.close()
@@ -258,6 +254,14 @@ def load(driver, crc, pir):
 						if "Recently" in child.text:
 							ft.write(str(child))
 			ft.write("</table>")
+			with open('login/templates/load.html', 'r') as f:
+				contents = f.read()
+
+				sup = BeautifulSoup(contents, 'html.parser')
+				li = sup.findAll('a')
+				for l in li:
+					if "/" in str(l.text):
+						pair.append(str(l.text))
 			load_file = "load.html"
 		else:
 			try:
