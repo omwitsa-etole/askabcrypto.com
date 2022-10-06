@@ -203,6 +203,7 @@ def load(driver, crc, pir):
 	src = []
 	pr = []
 	count = 0
+	cont = 0
 	p = []
 	s = []
 	pair = []
@@ -275,6 +276,8 @@ def load(driver, crc, pir):
 
 				sup = BeautifulSoup(contents, 'html.parser')
 				li = sup.findAll('td')
+				tr = sup.findAll('tr')
+				ft.write("<table><tbody>")
 				for l in li:
 					k = l.previous_sibling
 					if pir in l.text:
@@ -290,18 +293,10 @@ def load(driver, crc, pir):
 						g = manual_replace(g, '', 0)
 						pr.append(g)
 						src.append(str(k.text))
-			cont = 0
-			with open('login/templates/load.html', 'r') as f:
-				contents = f.read()
-
-				sup = BeautifulSoup(contents, 'html.parser')
-				ft.write("<table><tbody>")
-				ft.write(str(sup.tr))
-				for child in sup.recursiveChildGenerator():
-					if child.name == "tr":
-						if pir in child.text:
-							cont = 1
-							ft.write(str(child))
+				for t in tr:
+					if pir in t.text:
+						cont = 1
+						ft.write(str(child))
 			if(cont == 0):		
 				ft.write("<center><p style='font-size: 20px;margin-top: 5%;'>No data found from pair</p></center>")
 			ft.write("</tbody></table>")
