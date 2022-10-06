@@ -131,7 +131,7 @@ def table_load():
 		p1.append(float(p[i]))
 	for i in range(0, len(src)-1):
 		p2.append(float(pr[i]))
-	return render_template("tableload.html",m = len(src), n = len(p), p = p, s = s, pir=currency, p1 = p1, p2 = p2, source = src)
+	return render_template("tableload.html",m = len(src), n = len(p1), p = p, s = s, pir=currency, p1 = p1, p2 = p2, source = src)
 
 @app.route('/f', methods =['GET', 'POST'])
 def loader():
@@ -174,7 +174,8 @@ def home():
 			k = str(v.get_attribute('href'))
 			k = k.replace("https://coinmarketcap.com/currencies/", "")
 			k = k.split('/')
-			source.append(k[0])
+			if k[0] not in source:
+				source.append(k[0])
 	pir = ""
 	if request.method == 'POST' and "pair" in request.form:
 		currency = request.form['currency']
@@ -213,9 +214,9 @@ def load(driver, crc, pir):
 			break
 		count += 1	
 		url = "https://coinmarketcap.com/currencies/"+crc+"/"
-		driver.get(url)
-		time.sleep(1)		
-		driver.execute_script("window.scrollTo(0, 1700)")
+		driver.get(url)	
+		#driver.execute_script("window.scrollTo(0, 1700)")
+		time.sleep(1)	
 		vx = driver.find_elements(By.TAG_NAME, "a")
 		#page_source = requests.get(url+"markets/") 
 		try:
@@ -223,6 +224,7 @@ def load(driver, crc, pir):
 			break
 		except:
 			pass
+		time.sleep(1)
 		driver.get(url+"markets/")
 		#driver.refresh()
 		if pir == "":
@@ -254,15 +256,11 @@ def load(driver, crc, pir):
 					if child.name == "tr":
 						if "Recently" in child.text:
 							ft.write(str(child))
-			ft.write("</table>")
-			with open('login/templates/load.html', 'r') as f:
-				contents = f.read()
-
-				sup = BeautifulSoup(contents, 'html.parser')
 				li = sup.findAll('a')
 				for l in li:
 					if "/" in str(l.text):
 						pair.append(str(l.text))
+			ft.write("</table>")
 			load_file = "load.html"
 		else:
 			try:
@@ -296,7 +294,7 @@ def load(driver, crc, pir):
 				for t in tr:
 					if pir in t.text:
 						cont = 1
-						ft.write(str(child))
+						ft.write(str(t))
 			if(cont == 0):		
 				ft.write("<center><p style='font-size: 20px;margin-top: 5%;'>No data found from pair</p></center>")
 			ft.write("</tbody></table>")
