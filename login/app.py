@@ -42,6 +42,7 @@ source = []
 pair = []
 s = []
 p = []
+pir = ""
 currency = ""
 load_file = "load.html"
 
@@ -151,8 +152,17 @@ def loader():
 		return render_template(load_file, currency = currency, msg = msg)
 	return render_template(load_file, currency = currency, msg = msg)
 
-@app.route('/filter')
 @app.route('/dashboard')
+def re_home():
+	global source
+	global pair
+	global load_file
+	global p
+	global s
+	global currency
+	global pir
+	return render_template('index.html', currency = session['currency'], urls = source, n = len(s), m = len(p), pairs = pair, pir=pir, p = p, s = s)
+@app.route('/filter')
 @app.route('/', methods =['GET', 'POST'])
 def home():
 	if session.get("loggedin") == None or session.get("loggedin") == "None":
@@ -163,6 +173,7 @@ def home():
 	global p
 	global s
 	global currency
+	global pir
 	source = []
 	driver.get("https://coinmarketcap.com")
 	time.sleep(1)
@@ -224,15 +235,14 @@ def load(driver, crc, pir):
 			break
 		except:
 			pass
-		time.sleep(1)
 		driver.get(url+"markets/")
+		time.sleep(3)
 		#driver.refresh()
 		if pir == "":
+			driver.execute_script("window.scrollTo(0, 1500)")
 			while True:
 				try:
-					driver.execute_script("window.scrollTo(0, 1500)")
 					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
-					time.sleep(1)
 					soup = table.get_attribute('innerHTML') 
 					time.sleep(2)
 					break
@@ -256,11 +266,15 @@ def load(driver, crc, pir):
 					if child.name == "tr":
 						if "Recently" in child.text:
 							ft.write(str(child))
+						if "Loading data" in child.text:
+							load_file = "error404.html"
+							break
 				li = sup.findAll('a')
 				for l in li:
 					if "/" in str(l.text):
 						pair.append(str(l.text))
-			ft.write("</table>")
+				ft.write("</table>")
+				ft.close()
 			load_file = "load.html"
 		else:
 			try:
@@ -275,7 +289,6 @@ def load(driver, crc, pir):
 				sup = BeautifulSoup(contents, 'html.parser')
 				li = sup.findAll('td')
 				tr = sup.findAll('tr')
-				ft.write("<table><tbody>")
 				for l in li:
 					k = l.previous_sibling
 					if pir in l.text:
@@ -284,22 +297,25 @@ def load(driver, crc, pir):
 						g = manual_replace(g, '', 0)
 						if f is not None or f != "None":
 							p.append(g)
-							s.append(str(pir))
-					if  "/" in l.text:
+							s.append(str(pir)+"("+str(k.text)+")")
+					if  pir in l.text :
+						#if 
 						f = l.find_next_sibling("td") 
 						g = f.text
 						g = manual_replace(g, '', 0)
 						pr.append(g)
 						src.append(str(k.text))
+				ft.write("<table><tbody>")
+				ft.write(str(sup.tr))
 				for t in tr:
-					if pir in t.text:
+					if pir in str(t.text):
 						cont = 1
 						ft.write(str(t))
-			if(cont == 0):		
-				ft.write("<center><p style='font-size: 20px;margin-top: 5%;'>No data found from pair</p></center>")
-			ft.write("</tbody></table>")
-			ft.close()
-			load_file = "loadpair.html"
+				if(cont == 0):		
+					ft.write("<center><p style='font-size: 20px;margin-top: 5%;'>No data found from pair</p></center>")
+				ft.write("</tbody></table>")
+				ft.close()
+				load_file = "loadpair.html"
 		return
 		driver.close()
 		break

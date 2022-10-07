@@ -14,7 +14,8 @@ body{
 	margin-top: 10%;
 	width: 89%;
 	margin-left: 11%;
-	max-height: 400px;
+	height: 350px;
+	max-height: 500px;
 	overflow: auto;
 	box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 	border-radius: 9px;
@@ -307,9 +308,9 @@ function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
    }
 $(document).ready(function() {
-	$("#page_load").load("{{ url_for('fetcher') }}");
-	$("#page_load2").load("{{ url_for('fetcher') }}");
-	//$.ajaxSetup({async: false});
+	//$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load2").load("{{ url_for('fetcher') }}");
+	$.ajaxSetup({async: false});
 	//$.post('/', {currency:'', pair:''});
 	$("#page_load").load("{{ url_for('loader') }}");
 	$("#page_load2").load("{{ url_for('table_load') }}");
@@ -321,9 +322,11 @@ var $loading2 = $('#loadingDiv2').hide();
 $(document)
   .ajaxStart(function () {
     $loading.show();
+    $loading2.show();
   })
   .ajaxStop(function () {
     $loading.hide();
+    $loading2.hide();
   });
 window.onclick = function(event) {
 	if (!event.target.matches('.fa')) {
@@ -338,7 +341,9 @@ window.onclick = function(event) {
 function loadpage(){
 	var cur = document.getElementById("hcur");
 	var pr = document.getElementById("pair");
+	$.ajaxSetup({async: false});
 	$("#page_load").load("{{ url_for('loader') }}");
+	$.ajaxSetup({async: false});
 	$("#page_load2").load("{{ url_for('table_load') }}");
 	console.log("{{currency}}")
 	cur.innerText = "{{ session['currency'] }}";
@@ -347,17 +352,17 @@ function loadpage(){
 }
 function refresh(){
 	//$.post('/', {currency:'{{currency}}', pair:''});
-	$("#page_load").load("{{ url_for('fetcher') }}");
-	$("#page_load2").load("{{ url_for('fetcher') }}");
-	sleep(3000).then(() => {
-		loadpage();
-	})
+	//$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load2").load("{{ url_for('fetcher') }}");
+	//sleep(1000).then(() => {
+	loadpage();
+	//})
 }
 function fetchData(){
 	var cur = document.getElementById("currency");
 	var pr = document.getElementById("pair");
-	$("#page_load").load("{{ url_for('fetcher') }}");
-	$("#page_load2").load("{{ url_for('fetcher') }}");
+	//$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load2").load("{{ url_for('fetcher') }}");
 	$.ajaxSetup({async: false});
 	$.post('/', {currency:'{{currency}}', pair:pr.value});
 	$("#page_load").load("{{ url_for('loader') }}");
