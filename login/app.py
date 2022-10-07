@@ -297,7 +297,7 @@ def load(driver, crc, pir):
 						g = manual_replace(g, '', 0)
 						if f is not None or f != "None":
 							p.append(g)
-							s.append(str(pir)+"("+str(l.text)+")")
+							s.append(str(pir)+"("+str(k.text)+")")
 					if  pir in l.text :
 						#if 
 						f = l.find_next_sibling("td") 

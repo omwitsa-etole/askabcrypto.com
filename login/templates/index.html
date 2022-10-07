@@ -341,7 +341,9 @@ window.onclick = function(event) {
 function loadpage(){
 	var cur = document.getElementById("hcur");
 	var pr = document.getElementById("pair");
+	$.ajaxSetup({async: false});
 	$("#page_load").load("{{ url_for('loader') }}");
+	$.ajaxSetup({async: false});
 	$("#page_load2").load("{{ url_for('table_load') }}");
 	console.log("{{currency}}")
 	cur.innerText = "{{ session['currency'] }}";
