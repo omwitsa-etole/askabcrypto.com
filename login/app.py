@@ -22,7 +22,7 @@ chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument('--headless')
 chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
-driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
+driver = webdriver.Chrome(options=chrome_options)
 conn = sqlite3.connect('coinmarketcap-database.sqlite3')
 conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
 conn.close()
