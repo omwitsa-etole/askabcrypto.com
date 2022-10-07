@@ -308,9 +308,9 @@ function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
    }
 $(document).ready(function() {
-	$("#page_load").load("{{ url_for('fetcher') }}");
-	$("#page_load2").load("{{ url_for('fetcher') }}");
-	//$.ajaxSetup({async: false});
+	//$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load2").load("{{ url_for('fetcher') }}");
+	$.ajaxSetup({async: false});
 	//$.post('/', {currency:'', pair:''});
 	$("#page_load").load("{{ url_for('loader') }}");
 	$("#page_load2").load("{{ url_for('table_load') }}");
@@ -322,9 +322,11 @@ var $loading2 = $('#loadingDiv2').hide();
 $(document)
   .ajaxStart(function () {
     $loading.show();
+    $loading2.show();
   })
   .ajaxStop(function () {
     $loading.hide();
+    $loading2.hide();
   });
 window.onclick = function(event) {
 	if (!event.target.matches('.fa')) {
@@ -348,17 +350,17 @@ function loadpage(){
 }
 function refresh(){
 	//$.post('/', {currency:'{{currency}}', pair:''});
-	$("#page_load").load("{{ url_for('fetcher') }}");
-	$("#page_load2").load("{{ url_for('fetcher') }}");
-	sleep(3000).then(() => {
-		loadpage();
-	})
+	//$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load2").load("{{ url_for('fetcher') }}");
+	//sleep(1000).then(() => {
+	loadpage();
+	//})
 }
 function fetchData(){
 	var cur = document.getElementById("currency");
 	var pr = document.getElementById("pair");
-	$("#page_load").load("{{ url_for('fetcher') }}");
-	$("#page_load2").load("{{ url_for('fetcher') }}");
+	//$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load2").load("{{ url_for('fetcher') }}");
 	$.ajaxSetup({async: false});
 	$.post('/', {currency:'{{currency}}', pair:pr.value});
 	$("#page_load").load("{{ url_for('loader') }}");

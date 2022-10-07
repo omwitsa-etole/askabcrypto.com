@@ -42,6 +42,7 @@ source = []
 pair = []
 s = []
 p = []
+pir = ""
 currency = ""
 load_file = "load.html"
 
@@ -131,8 +132,6 @@ def table_load():
 		p1.append(float(p[i]))
 	for i in range(0, len(src)-1):
 		p2.append(float(pr[i]))
-	print(p1)
-	print(p2)
 	return render_template("tableload.html",m = len(src), n = len(p1), p = p, s = s, pir=currency, p1 = p1, p2 = p2, source = src)
 
 @app.route('/f', methods =['GET', 'POST'])
@@ -153,8 +152,17 @@ def loader():
 		return render_template(load_file, currency = currency, msg = msg)
 	return render_template(load_file, currency = currency, msg = msg)
 
-@app.route('/filter')
 @app.route('/dashboard')
+def re_home():
+	global source
+	global pair
+	global load_file
+	global p
+	global s
+	global currency
+	global pir
+	return render_template('index.html', currency = session['currency'], urls = source, n = len(s), m = len(p), pairs = pair, pir=pir, p = p, s = s)
+@app.route('/filter')
 @app.route('/', methods =['GET', 'POST'])
 def home():
 	if session.get("loggedin") == None or session.get("loggedin") == "None":
@@ -165,6 +173,7 @@ def home():
 	global p
 	global s
 	global currency
+	global pir
 	source = []
 	driver.get("https://coinmarketcap.com")
 	time.sleep(1)
@@ -288,16 +297,14 @@ def load(driver, crc, pir):
 						g = manual_replace(g, '', 0)
 						if f is not None or f != "None":
 							p.append(g)
-							s.append(str(pir))
-							pr.append(g)
-							src.append(str(k.text))
-					if  "/" in l.text:
+							s.append(str(pir)+"("+str(l.text)+")")
+					if  pir in l.text :
 						#if 
 						f = l.find_next_sibling("td") 
 						g = f.text
 						g = manual_replace(g, '', 0)
-						#pr.append(g)
-						#src.append(str(k.text))
+						pr.append(g)
+						src.append(str(k.text))
 				ft.write("<table><tbody>")
 				ft.write(str(sup.tr))
 				for t in tr:
