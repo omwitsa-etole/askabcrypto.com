@@ -237,6 +237,13 @@ def load(driver, crc, pir):
 			pass
 		driver.get(url+"markets/")
 		time.sleep(3)
+		vs = driver.find_elements(By.TAG_NAME, "a")
+		for s in vs:
+			if "trade" in str(s.get_attribute("innerHTML")):
+				k = str(s.get_attribute("innerHTML"))
+				k = k.split("/")
+				if k[0] not in p:
+					p.append(k[0])
 		#driver.refresh()
 		if pir == "":
 			driver.execute_script("window.scrollTo(0, 1500)")
