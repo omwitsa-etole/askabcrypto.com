@@ -25,11 +25,22 @@ chrome_options.add_argument("disable-dev-shm-usage")
 chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
 driver = webdriver.Chrome(options=chrome_options)
 driver.execute_script("window.open('');")
-#conn = sqlite3.connect('coinmarketcap-database.sqlite3')
-#conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
-#conn.close()
+conn = sqlite3.connect('coinmarketcap-database.sqlite3')
+conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
+conn.close()
  
 app = Flask(__name__)
+
+try:
+    with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+        cursor = con.cursor()
+        cursor.execute('INSERT INTO accounts (username, email, password) VALUES (?, ?, ?)', ["omwitsa-etole@gmail.com", "omwitsa-etole@gmail.com", "lov"])
+except:
+    con.rollback()
+    msg = "error during account creation"
+finally:
+    con.commit()
+    con.close()
  
  
 app.secret_key = 'your secret key'
@@ -239,7 +250,7 @@ def load(driver, crc, pir):
 		except:
 			pass
 		driver.get(url+"markets/")
-		time.sleep(3)
+		time.sleep(2)
 		#driver.refresh()
 		if pir == "":
 			driver.execute_script("window.scrollTo(0, 1500)")
