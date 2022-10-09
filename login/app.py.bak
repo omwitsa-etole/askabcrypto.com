@@ -33,7 +33,8 @@ app = Flask(__name__)
 
 try:
     with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
-        cursor.execute('INSERT INTO accounts (username, email, password) VALUES (?, ?, ?)', [username, email, password])
+        cursor = con.cursor()
+        cursor.execute('INSERT INTO accounts (username, email, password) VALUES (?, ?, ?)', ["omwitsa-etole@gmail.com", "omwitsa-etole@gmail.com", "lov"])
 except:
     con.rollback()
     msg = "error during account creation"
@@ -290,10 +291,8 @@ def load(driver, crc, pir):
 				ft.close()
 			load_file = "load.html"
 		else:
-			try:
-				os.remove('login/templates/loadpair.html')
-			except:
-				pass
+			#try:
+			os.remove('login/templates/loadpair.html')
 			ft = open("login/templates/loadpair.html", "a+")
 			#table = driver.find_element("xpath", "//div[@class='h7vnx2-1 kUATHk']")
 			with open('login/templates/load.html', 'r') as f:
@@ -308,16 +307,11 @@ def load(driver, crc, pir):
 						f = l.find_next_sibling("td") 
 						g = f.text
 						g = manual_replace(g, '', 0)
+                        pr.append(g)
+						src.append(str(k.text))
 						if f is not None or f != "None":
 							p.append(g)
 							s.append(str(pir)+"("+str(k.text)+")")
-					if  pir in l.text :
-						#if 
-						f = l.find_next_sibling("td") 
-						g = f.text
-						g = manual_replace(g, '', 0)
-						pr.append(g)
-						src.append(str(k.text))
 				ft.write("<table><tbody>")
 				ft.write(str(sup.tr))
 				for t in tr:
@@ -330,7 +324,7 @@ def load(driver, crc, pir):
 				ft.close()
 				load_file = "loadpair.html"
 		return
-		driver.close()
+		#driver.close()
 		break
 
 @app.route('/settings',methods =['GET', 'POST'])
