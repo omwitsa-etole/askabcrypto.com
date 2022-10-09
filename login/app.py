@@ -190,6 +190,9 @@ def home():
 			k = k.split('/')
 			if k[0] not in source:
 				source.append(k[0])
+		if "trade" in str(v.get_attribute('href')):
+			if str(v.text) not in p:
+				p.append(str(v.text))
 	pir = ""
 	if request.method == 'POST' and "pair" in request.form:
 		currency = request.form['currency']
@@ -240,6 +243,7 @@ def load(driver, crc, pir):
 			pass
 		driver.get(url+"markets/")
 		time.sleep(3)
+		
 		#driver.refresh()
 		if pir == "":
 			driver.execute_script("window.scrollTo(0, 1500)")

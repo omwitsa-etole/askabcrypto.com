@@ -341,7 +341,7 @@ window.onclick = function(event) {
 function loadpage(){
 	var cur = document.getElementById("hcur");
 	var pr = document.getElementById("pair");
-	$.ajaxSetup({async: false});
+	//$.ajaxSetup({async: false});
 	$("#page_load").load("{{ url_for('loader') }}");
 	$.ajaxSetup({async: false});
 	$("#page_load2").load("{{ url_for('table_load') }}");
@@ -352,17 +352,17 @@ function loadpage(){
 }
 function refresh(){
 	//$.post('/', {currency:'{{currency}}', pair:''});
-	//$("#page_load").load("{{ url_for('fetcher') }}");
-	//$("#page_load2").load("{{ url_for('fetcher') }}");
-	//sleep(1000).then(() => {
-	loadpage();
-	//})
+	$("#page_load").load("{{ url_for('fetcher') }}");
+	$("#page_load2").load("{{ url_for('fetcher') }}");
+	sleep(2000).then(() => {
+		loadpage();
+	})
 }
 function fetchData(){
 	var cur = document.getElementById("currency");
 	var pr = document.getElementById("pair");
-	//$("#page_load").load("{{ url_for('fetcher') }}");
-	//$("#page_load2").load("{{ url_for('fetcher') }}");
+	$("#page_load").load("{{ url_for('fetcher') }}");
+	$("#page_load2").load("{{ url_for('fetcher') }}");
 	$.ajaxSetup({async: false});
 	$.post('/', {currency:'{{currency}}', pair:pr.value});
 	$("#page_load").load("{{ url_for('loader') }}");
