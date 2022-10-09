@@ -25,9 +25,9 @@ chrome_options.add_argument("disable-dev-shm-usage")
 chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
 driver = webdriver.Chrome(options=chrome_options)
 driver.execute_script("window.open('');")
-conn = sqlite3.connect('coinmarketcap-database.sqlite3')
-conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
-conn.close()
+#conn = sqlite3.connect('coinmarketcap-database.sqlite3')
+#conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
+#conn.close()
  
 app = Flask(__name__)
  
@@ -190,9 +190,6 @@ def home():
 			k = k.split('/')
 			if k[0] not in source:
 				source.append(k[0])
-		if "trade" in str(v.get_attribute('href')):
-			if str(v.text) not in p:
-				p.append(str(v.text))
 	pir = ""
 	if request.method == 'POST' and "pair" in request.form:
 		currency = request.form['currency']
@@ -243,7 +240,6 @@ def load(driver, crc, pir):
 			pass
 		driver.get(url+"markets/")
 		time.sleep(3)
-		
 		#driver.refresh()
 		if pir == "":
 			driver.execute_script("window.scrollTo(0, 1500)")
