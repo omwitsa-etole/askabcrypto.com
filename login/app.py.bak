@@ -23,7 +23,8 @@ chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument('--headless')
 chrome_options.add_argument("disable-dev-shm-usage")
 chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
-driver = webdriver.Chrome(options=chrome_options)
+driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
+#driver = webdriver.Chrome(options=chrome_options)
 driver.execute_script("window.open('');")
 conn = sqlite3.connect('coinmarketcap-database.sqlite3')
 conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
@@ -250,7 +251,8 @@ def load(driver, crc, pir):
 		except:
 			pass
 		driver.get(url+"markets/")
-		time.sleep(2)
+		time.sleep(3)
+		
 		#driver.refresh()
 		if pir == "":
 			driver.execute_script("window.scrollTo(0, 1500)")
@@ -258,7 +260,7 @@ def load(driver, crc, pir):
 				try:
 					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
 					soup = table.get_attribute('innerHTML') 
-					#time.sleep(2)
+					time.sleep(2)
 					break
 				except:
 					pass	
@@ -291,8 +293,10 @@ def load(driver, crc, pir):
 				ft.close()
 			load_file = "load.html"
 		else:
-			#try:
-			os.remove('login/templates/loadpair.html')
+			try:
+				os.remove('login/templates/loadpair.html')
+			except:
+				pass
 			ft = open("login/templates/loadpair.html", "a+")
 			#table = driver.find_element("xpath", "//div[@class='h7vnx2-1 kUATHk']")
 			with open('login/templates/load.html', 'r') as f:
@@ -306,9 +310,7 @@ def load(driver, crc, pir):
 					if pir in l.text:
 						f = l.find_next_sibling("td") 
 						g = f.text
-						g = manual_replace(g, '', 0)
-                        pr.append(g)
-						src.append(str(k.text))
+						g = manual_replace(g, '', 0);pr.append(g);src.append(str(k.text))
 						if f is not None or f != "None":
 							p.append(g)
 							s.append(str(pir)+"("+str(k.text)+")")
@@ -324,9 +326,8 @@ def load(driver, crc, pir):
 				ft.close()
 				load_file = "loadpair.html"
 		return
-		#driver.close()
+		driver.close()
 		break
-
 @app.route('/settings',methods =['GET', 'POST'])
 def settings():
 	if session.get("loggedin") == None or session.get("loggedin") == "None":
