@@ -247,7 +247,7 @@ def load(driver, crc, pir):
 				try:
 					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
 					soup = table.get_attribute('innerHTML') 
-					time.sleep(2)
+					#time.sleep(2)
 					break
 				except:
 					pass	
