@@ -181,8 +181,6 @@ def other():
     ft.write(str(soup))
     ft.close()
     os.remove("login/templates/loadcap.html")
-    ft = open("login/templates/loadcap.html", "a+")
-    ft.write("<table><tbody>")
     fnd = []
     cont = 0
     with open('login/templates/file2.html', 'r') as f:
@@ -200,7 +198,9 @@ def other():
                         if int(g) <= cap and str(l.text) not in fnd:
                             fnd.append(str(l.text))
                     else:
-                        fnd.append("$")                    
+                        fnd.append("$")   
+        ft = open("login/templates/loadcap.html", "a+")
+        ft.write("<table><tbody>")                        
         for t in lt:
             cont += 1
             for i in fnd:
