@@ -198,9 +198,9 @@ def other():
                     g = str(l.text)
                     g = manual_replace(g, '', 0);
                     g = g[0:4]
-                    g = int(g)*1000000000
+                    g = float(g)*1000000000
                     if cap is not None:
-                        if g <= int(cap) and str(l.text) not in fnd:
+                        if g <= float(cap) and str(l.text) not in fnd:
                             fnd.append(str(l.text))
                     else:
                         fnd.append("%")   

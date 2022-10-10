@@ -171,7 +171,7 @@ def loader():
 def other():
     cap = None
     if request.method == 'POST' and "cap" in request.form:
-        cap = reques.form["cap"]
+        cap = request.form["cap"]
     driver.get("https://coinmarketcap.com")
     time.sleep(2)
     driver.execute_script("window.scrollTo(0, 2000)")
@@ -198,7 +198,7 @@ def other():
                     g = str(l.text)
                     g = manual_replace(g, '', 0);
                     g = g[0:4]
-                    g = int(g)*1000000000
+                    g = float(g)*1000000000
                     if cap is not None:
                         if g <= int(cap) and str(l.text) not in fnd:
                             fnd.append(str(l.text))
