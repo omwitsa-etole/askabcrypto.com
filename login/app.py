@@ -173,19 +173,22 @@ def other():
     if request.method == 'POST' and "cap" in request.form:
         cap = reques.form["cap"]
     driver.get("https://coinmarketcap.com")
-    time.sleep(4)
-    driver.execute_script("window.scrollTo(0, 1500)")
+    time.sleep(2)
+    driver.execute_script("window.scrollTo(0, 2000)")
     table = driver.find_element("xpath", "//div[@class='h7vnx2-1 bFzXgL']")
     soup = table.get_attribute('innerHTML') 
     ft = open("login/templates/file2.html", "w")
     ft.write(str(soup))
     ft.close()
-    os.remove("login/templates/loadcap.html")
+    try:
+        os.remove("login/templates/loadcap.html")
+    except:
+        pass
     fnd = []
     cont = 0
     with open('login/templates/file2.html', 'r') as f:
         contents = f.read();
-        sup = BeautifulSoup(contents, 'html.parser');#ft.write(str(sup.tr))
+        sup = BeautifulSoup(contents, 'html.parser');
         li = sup.findAll("td")
         lt = sup.findAll("tr")
         for l in li:
@@ -200,15 +203,19 @@ def other():
                     else:
                         fnd.append("$")   
         ft = open("login/templates/loadcap.html", "a+")
-        ft.write("<table><tbody>")                        
+        ft.write("<table><tbody>") 
+        ft.write(str(sup.tr))        
         for t in lt:
             cont += 1
             for i in fnd:
                 if i in str(t.text):
                     ft.write(str(t))
                     break
-    ft.write("</tbody></table>")
-    ft.close()
+        ft.write("</tbody></table>")
+        ft.close()
+    return render_template("other.html")
+@app.route('/cap')
+def cap():
     return render_template("loadcap.html")
 @app.route('/dashboard')
 def re_home():

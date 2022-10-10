@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CoinMarketCap</title>
+<style>
+body{
+	overflow: auto;
+	position: relative;
+	background: #ddd;
+	position: relative;
+}
+
+.page_load{
+	margin-top: 10%;
+	width: 89%;
+	margin-left: 11%;
+	height: 400px;
+	max-height: 800px;
+	overflow: auto;
+	overflow-x: auto;
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+	background: white;
+	margin-bottom: 2%;
+	position: relative;
+}
+
+.table{
+	border: collapse;
+	width: 100%;
+	height: 100%;
+	border-spacing: 0;
+        position:absolute;
+}
+.td {
+	border: 1px solid black;
+	height: 30px;
+}
+.tr{
+	height: 30px;
+	max-height: 30px;
+}
+.ii{
+	height: 50%;
+	margin-top: 2%;
+}
+.search{
+	position: fixed;
+	z-index: 99;
+	top: 0%;
+	left: 0;
+	width: 100%;
+	height: 90px;
+	overflow: hidden;
+	background: white;
+	box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+	border-radius: 4px;
+}
+.search input{
+	margin-left: 5%;
+	width: 300px;
+	height: 30px;
+	margin-top: 2.5%;
+}
+.st{
+	margin-left: 2%;
+	width: 80px;
+	height: 35px;
+}
+.search a{
+	position: absolute;
+	top: 30%;
+	font-size: 18px;
+	color: blue;
+	cursor: pointer;
+}
+#rf{	
+	margin-left: 5%;
+	font-size: 18px;
+	color: blue;
+	cursor: pointer;	
+}
+
+#m3{
+	position: absolute;
+	top: 30%;
+	right: 2%;
+	margin-top: 7px;
+	font-size: 18px;
+	color: red;
+	cursor: pointer;
+}
+.search a:hover{
+	text-decoration: underline;
+}
+.sidebar-container {
+    position: fixed;
+    width: 11%;
+    height: 100%;
+    left: 0;
+    top: 10%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    color: #fff;
+  }
+  
+  .content-container {
+    padding-top: 20px;
+  }
+  
+  .sidebar-logo {
+    padding: 10px 15px 10px 30px;
+    font-size: 20px;
+}
+  
+  .sidebar-navigation {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    position: relative;
+  }
+  
+  .sidebar-navigation li {
+    background-color: transparent;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    line-height: 20px;
+  }
+  
+  .sidebar-navigation li a {
+    padding: 10px 15px 10px 30px;
+    display: inline-block;
+    color: black;
+  }
+  
+  .sidebar-navigation li .fa {
+    margin-right: 10px;
+  }
+  
+  .sidebar-navigation li a:active,
+  .sidebar-navigation li a:hover,
+  .sidebar-navigation li a:focus {
+    text-decoration: none;
+    outline: none;
+  }
+  
+  .sidebar-navigation li::before {
+    background-color: #2574A9;
+    position: absolute;
+    content: '';
+    height: 100%;
+    left: 0;
+    top: 0;
+    -webkit-transition: width 0.2s ease-in;
+    transition: width 0.2s ease-in;
+    width: 3px;
+    z-index: -1;
+  }
+  
+  .sidebar-navigation li:hover::before {
+    width: 100%;
+  }
+
+.active{
+	 background-color: #2574A9;
+	color: white;
+}
+  
+  .sidebar-navigation .header {
+    font-size: 12px;
+    text-transform: uppercase;
+    background-color: #151515;
+    padding: 10px 15px 10px 30px;
+  }
+  
+  .sidebar-navigation .header::before {
+    background-color: transparent;
+  }
+  
+  .content-container {
+    padding-left: 220px;
+  }
+.profile{
+	position: fixed;
+	right: 2%;
+	top: 0;
+	height: auto;
+}
+.profile img{
+	width: 70px;
+	height: 70px;
+	border-radius: 50%;
+	cursor: pointer;
+}
+.profile_options{
+	display: none;
+	position: absolute;width: 100px;height: 150px;
+	background-color: white;right: 1%;margin-top: -2%;
+	z-index: 99;
+	box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+}
+.profile_options a{
+	display: block;
+	width: 100%;
+	color: black;
+	font-size: 18px;
+	text-align: center;
+	text-decoration: none;
+	height: 33%;
+	cursor: pointer;
+}
+.profile_options a:hover{
+	background: #ddd;
+}
+.high confidenceLevel{
+	background: green;
+	color: white;
+	width: 45px;
+	height: 20px;
+	border-radius: 3px;
+}
+.page_load table{
+	border-collapse: collapse;
+	width: 90%;
+	margin-left: 5%;
+
+}
+#page_load2 td{
+	min-height: 25px;
+}
+#fm{
+	margin-left: 4%;
+}
+.loader {
+  border: 16px solid blue; 
+  border-top: 16px solid #3498db; 
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  opacity: 0.3;
+  margin-left: 45%;
+  margin-top: 15%;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://use.fontawesome.com/4f05e2c5d5.js"></script>
+</head>
+<body>
+<div class="sidebar-container">
+    <ul class="sidebar-navigation">
+      <li></li>
+      <li></li>
+      <li>
+        <a id="m1" href="{{ url_for('re_home') }}"  data-toggle="pill" class="nav-link">
+          <i class="fa fa-home" aria-hidden="true"></i>Dashboard
+        </a>
+      </li>
+      <li></li>
+      <li>
+        <a id="m2" href="{{ url_for('settings') }}"  class="nav-link">
+          <i class="fa fa-gear"></i> Settings
+        </a>
+      </li>
+      <li></li>
+      <li>
+        <a id="m2" href="{{ url_for('other') }}"  class="nav-link active">
+          <i class="fa fa-gear"></i> Others
+        </a>
+      </li>
+    </ul> 
+  </div>
+<div class="profile">
+<img src="{{ url_for('static', filename='avatar.jpg') }}" class="fa" onclick="document.getElementById('profile_options').style.display='block'"></img>
+<div class="profile_options" id="profile_options">
+<a>alerts</a>
+<a>print</a>
+<a style="color: red;">Log Out</a>
+</div>
+</div>
+<div class="search">
+<form method="POST" id="fm" onsubmit="return fetchData()">
+Max cap amount: <input type="number" placeholder="enter market cap to filter">
+
+<button type="submit" onsubmit="return fetchData()" style="margin-left: 2%;" id="to_click">Submit</button><a onclick="refresh()" id="rf"><i class="fa fa-refresh fa-2x"></i></a>
+</h1>
+</form>
+<a id="m3" href="{{ url_for('logout') }}"><i class="fa fa-signout" aria-hidden="true"></i>logout</a>
+</div>
+<div class="page_load" id="page_load">
+<div id="loadingDiv" class="loader"></div>
+</div>
+</div>
+</body>
+<script>
+function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+   }
+$(document).ready(function() {
+    $("#page_load").load("{{ url_for('fetcher') }}");
+    sleep(2000).then(() => {
+		$("#page_load").load("{{ url_for('cap') }}");
+	})
+	
+});
+var $loading = $('#loadingDiv').hide();
+$(document)
+  .ajaxStart(function () {
+    $loading.show();
+  })
+  .ajaxStop(function () {
+    $loading.hide();
+  });
+window.onclick = function(event) {
+	if (!event.target.matches('.fa')) {
+		var x = document.getElementsByClassName('profile_options');
+		for(let i=0;i<x.length;i++){
+			if(x[i].style.display == "block"){
+				x[i].style.display="none";
+			}
+		}
+	}
+}
+function refresh(){
+	//$.post('/', {currency:'{{currency}}', pair:''});
+	$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load2").load("{{ url_for('fetcher') }}");
+	sleep(2000).then(() => {
+		$("#page_load").load("{{ url_for('cap') }}");
+	})
+}
+function fetchData(){
+	$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load2").load("{{ url_for('fetcher') }}");
+	return true;
+}
+function menuClick(id, val){
+	var x = document.getElementsByClassName('nav_link');
+	for(let i=0;i<x.length;i++){
+		//x[i].classList.remove("active");
+	}
+	var y = document.getElementById(id);
+	//y.cassList.add("active");
+	window.location = val;
+}
+</script>
+</html>
