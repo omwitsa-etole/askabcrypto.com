@@ -172,7 +172,6 @@ def other():
     cap = None
     if request.method == 'POST' and "cap" in request.form:
         cap = request.form["cap"]
-        cap = float(cap)/1000000000
     driver.get("https://coinmarketcap.com")
     time.sleep(2)
     driver.execute_script("window.scrollTo(0, 2000)")
@@ -205,8 +204,8 @@ def other():
                     g = g.split("B")
                     g = g[0]
                     g = float(g)
-                    if cap is not None or cap != "None":
-                        if float(g) <= cap:
+                    if cap is not None:
+                        if float(g) <= float(cap/1000000000):
                             if "button" in str(l.parent):
                                 ft.write(str(l.parent))
                     else:
