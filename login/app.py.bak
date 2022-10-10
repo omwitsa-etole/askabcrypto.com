@@ -205,7 +205,7 @@ def other():
                     g = g.split("B")
                     g = g[0]
                     g = float(g)
-                    if cap is not None:
+                    if cap is not None or cap != "None":
                         if float(g) <= cap:
                             if "button" in str(l.parent):
                                 ft.write(str(l.parent))
