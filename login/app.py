@@ -172,6 +172,7 @@ def other():
     cap = None
     if request.method == 'POST' and "cap" in request.form:
         cap = request.form["cap"]
+        cap = float(cap)/1000000000
     driver.get("https://coinmarketcap.com")
     time.sleep(2)
     driver.execute_script("window.scrollTo(0, 2000)")
@@ -197,13 +198,12 @@ def other():
                 if "%" in str(k.text):
                     g = str(l.text)
                     g = manual_replace(g, '', 0);
-                    g = g[0:4]
-                    g = float(g)*1000000000
+                    g = g.split("B")
+                    g = g[0]
+                    g = float(g)
                     if cap is not None:
-                        if g <= float(cap) and str(l.text) not in fnd:
-                            fnd.append(str(l.text))
-                    else:
-                        fnd.append("%")   
+                        if float(g) <= cap and str(l) not in fnd:
+                            fnd.append(str(l))  
         ft = open("login/templates/loadcap.html", "a+")
         ft.write("<style>td{max-width: 250px;overflow: hidden;font-size: 14px;}.coin-logo{display: none;}</style>")
         ft.write("<table><tbody>") 
@@ -211,10 +211,13 @@ def other():
         for t in lt:
             cont += 1
             if "button" in str(t):
-                for i in fnd:
-                    if i in str(t.text):
-                        ft.write(str(t))
-                        break
+                if len(fnd) != 0:
+                    for i in fnd:
+                        if i in str(t):
+                            ft.write(str(t))
+                           break
+                else:
+                    ft.write(str(t))
         ft.write("</tbody></table>")
         ft.close()
     return render_template("other.html")
