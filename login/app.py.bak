@@ -25,7 +25,7 @@ chrome_options.add_argument("disable-dev-shm-usage")
 #chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
 driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
 #driver = webdriver.Chrome(options=chrome_options)
-driver.execute_script("window.open('');")
+#driver.execute_script("window.open('');")
 conn = sqlite3.connect('coinmarketcap-database.sqlite3')
 conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
 conn.close()
@@ -192,6 +192,10 @@ def other():
         sup = BeautifulSoup(contents, 'html.parser');
         li = sup.findAll("td")
         lt = sup.findAll("tr")
+         ft = open("login/templates/loadcap.html", "a+")
+        ft.write("<style>td{max-width: 250px;overflow: hidden;font-size: 14px;}.coin-logo{display: none;}</style>")
+        ft.write("<table><tbody>") 
+        ft.write(str(sup.tr))
         for l in li:
             k = l.previous_sibling
             if "$" in str(l.text):
@@ -203,21 +207,11 @@ def other():
                     g = float(g)
                     if cap is not None:
                         if float(g) <= cap and str(l) not in fnd:
-                            fnd.append(str(l))  
-        ft = open("login/templates/loadcap.html", "a+")
-        ft.write("<style>td{max-width: 250px;overflow: hidden;font-size: 14px;}.coin-logo{display: none;}</style>")
-        ft.write("<table><tbody>") 
-        ft.write(str(sup.tr))        
-        for t in lt:
-            cont += 1
-            if "button" in str(t):
-                if len(fnd) != 0:
-                    for i in fnd:
-                        if i in str(t):
-                            ft.write(str(t))
-                           break
-                else:
-                    ft.write(str(t))
+                            if "button" in str(l.parent):
+                                ft.write(str(l.parent))
+                    else:
+                       if "button" in str(l.parent):
+                           ft.write(str(l.parent)) 
         ft.write("</tbody></table>")
         ft.close()
     return render_template("other.html")
