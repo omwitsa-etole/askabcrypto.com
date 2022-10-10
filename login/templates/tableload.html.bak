@@ -32,24 +32,24 @@ $(document).ready(function() {
 	sleep(2000).then(() => {
 		const table = document.getElementById('f-table');
 		const cells = table.getElementsByTagName('td');
-		let text = ""
+		let txt = ""
 		for (const cell of cells) {
-			text = cell.innerText;
+			txt = cell.innerText;
 			console.log(text)
-			if(text != "Undefined" && text != "No data"){
-				text =  parseFloat(text);
-				if(text > 10){
+			if(txt != "Undefined" && ext != "No data"){
+				txt =  parseFloat(txt);
+				if(txt > 10){
 					cell.setAttribute("style", "background-color:green;"); 
-					$(this).text(text.toFixed(2));
-				}else if(text >= 5 && text <= 10){
+					$(this).text(txt.toFixed(2));
+				}else if(txt >= 5 && text <= 10){
 					cell.setAttribute("style", "background-color: #6B8E23;");
-					$(this).text(text.toFixed(2));
-				}else if(text >= 1 && text <= 4){
+					$(this).text(txt.toFixed(2));
+				}else if(txt >= 1 && text <= 4){
 					cell.setAttribute("style", "background-color:#7CFC00;"); 
-					$(this).text(text.toFixed(2));
-				}else if(text < 1){
+					$(this).text(txt.toFixed(2));
+				}else if(txt < 1){
 					cell.setAttribute("style", "background-color:#98FB98;"); 
-					$(this).text(text.toFixed(2));
+					$(this).text(txt.toFixed(2));
 				}
 							
 			}

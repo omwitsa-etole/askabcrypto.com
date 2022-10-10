@@ -32,11 +32,11 @@ $(document).ready(function() {
 	sleep(2000).then(() => {
 		const table = document.getElementById('f-table');
 		const cells = table.getElementsByTagName('td');
-		let text = ""
+		let txt = ""
 		for (const cell of cells) {
 			txt = cell.innerText;
 			console.log(text)
-			if(txt != "Undefined" && ext != "No data"){
+			if(txt != "Undefined" && txt != "No data"){
 				txt =  parseFloat(txt);
 				if(txt > 10){
 					cell.setAttribute("style", "background-color:green;"); 
