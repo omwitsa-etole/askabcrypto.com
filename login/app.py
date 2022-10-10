@@ -305,7 +305,7 @@ def load(driver, crc, pir):
 				tr = sup.findAll('tr')
 				for l in li:
 					k = l.previous_sibling
-					if l.text == pir:
+					if pir == str(l.text):
 						f = l.find_next_sibling("td");count += 1; 
 						g = str(f.text)
 						g = manual_replace(g, '', 0);pr.append(g);src.append(str(k.text))
