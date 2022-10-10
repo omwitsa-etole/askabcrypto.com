@@ -22,7 +22,7 @@ chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument('--headless')
 chrome_options.add_argument("disable-dev-shm-usage")
-chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
+#chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
 #driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
 driver = webdriver.Chrome(options=chrome_options)
 driver.execute_script("window.open('');")
@@ -277,7 +277,7 @@ def load(driver, crc, pir):
 			with open('login/templates/file.html', 'r') as f:
 				contents = f.read()
 
-				sup = BeautifulSoup(contents, 'html.parser')
+				sup = BeautifulSoup(contents, 'html.parser');ft.write(str(sup.tr))
 				for child in sup.recursiveChildGenerator():
 					if child.name == "tr":
 						if "Recently" in child.text:
@@ -287,7 +287,8 @@ def load(driver, crc, pir):
 							break
 				li = sup.findAll('a')
 				for l in li:
-					if "/" in str(l.text):
+                
+					if "/" in str(l.text) and str(l.text) not in pair:
 						pair.append(str(l.text))
 				ft.write("</table>")
 				ft.close()
@@ -300,15 +301,14 @@ def load(driver, crc, pir):
 			ft = open("login/templates/loadpair.html", "a+")
 			#table = driver.find_element("xpath", "//div[@class='h7vnx2-1 kUATHk']")
 			with open('login/templates/load.html', 'r') as f:
-				contents = f.read()
-
+				contents = f.read();count = 0
 				sup = BeautifulSoup(contents, 'html.parser')
 				li = sup.findAll('td')
 				tr = sup.findAll('tr')
 				for l in li:
 					k = l.previous_sibling
 					if pir in l.text:
-						f = l.find_next_sibling("td") 
+						f = l.find_next_sibling("td");count += 1; 
 						g = f.text
 						g = manual_replace(g, '', 0);pr.append(g);src.append(str(k.text))
 						if f is not None or f != "None":
