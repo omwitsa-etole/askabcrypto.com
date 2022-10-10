@@ -23,8 +23,8 @@ chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument('--headless')
 chrome_options.add_argument("disable-dev-shm-usage")
 #chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
-#driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
-driver = webdriver.Chrome(options=chrome_options)
+driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
+#driver = webdriver.Chrome(options=chrome_options)
 driver.execute_script("window.open('');")
 conn = sqlite3.connect('coinmarketcap-database.sqlite3')
 conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
@@ -167,6 +167,48 @@ def loader():
 		return render_template(load_file, currency = currency, msg = msg)
 	return render_template(load_file, currency = currency, msg = msg)
 
+@app.route('/other', methods =['GET', 'POST'])
+def other():
+    cap = None
+    if request.method == 'POST' and "cap" in request.form:
+        cap = reques.form["cap"]
+    driver.get("https://coinmarketcap.com")
+    time.sleep(4)
+    driver.execute_script("window.scrollTo(0, 1500)")
+    table = driver.find_element("xpath", "//div[@class='h7vnx2-1 bFzXgL']")
+    soup = table.get_attribute('innerHTML') 
+    ft = open("login/templates/file2.html", "w")
+    ft.write(str(soup))
+    ft.close()
+    os.remove("login/templates/loadcap.html")
+    ft = open("login/templates/loadcap.html", "a+")
+    ft.write("<table><tbody>")
+    fnd = []
+    cont = 0
+    with open('login/templates/file2.html', 'r') as f:
+        contents = f.read();
+        sup = BeautifulSoup(contents, 'html.parser');#ft.write(str(sup.tr))
+        li = sup.findAll("td")
+        lt = sup.findAll("tr")
+        for l in li:
+            k = l.previous_sibling
+            if "$" in str(l.text):
+                if "Buy" not in str(k.text):
+                    g = str(l.text)
+                    g = manual_replace(g, '', 0);
+                    if cap is not None:
+                        if int(g) <= cap and str(l.text) not in fnd:
+                            fnd.append(str(l.text))
+                    else:
+                        fnd.append("$")                    
+        for t in lt:
+            cont += 1
+            for i in fnd:
+                if i in str(t.text):
+                    ft.write(str(t))
+    ft.write("</tbody></table>")
+    ft.close()
+    return render_template("loadcap.html")
 @app.route('/dashboard')
 def re_home():
 	global source
