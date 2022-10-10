@@ -201,7 +201,6 @@ def other():
                     g = g.split("B")
                     g = g[0]
                     g = float(g)
-                    print(str(g)+":"+str(cap))
                     if cap is not None:
                         if float(g) <= cap and str(l) not in fnd:
                             fnd.append(str(l))  
