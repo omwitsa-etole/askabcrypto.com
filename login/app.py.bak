@@ -140,14 +140,14 @@ def table_load():
 	global s
 	global src
 	global pr
-	global currency
+	global currency;global pir
 	p1 = []
-	p2 = []
+	p2 = [];
 	for i in range(0, len(s)-1):
 		p1.append(float(p[i]))
 	for i in range(0, len(src)-1):
 		p2.append(float(pr[i]))
-	return render_template("tableload.html",m = len(src), n = len(p1), p = p, s = s, pir=currency, p1 = p1, p2 = p2, source = src)
+	return render_template("tableload.html",m = len(src), n = len(p), p = p, s = s, pir=pir, p1 = p1, p2 = p2, source = src)
 
 @app.route('/f', methods =['GET', 'POST'])
 def loader():
@@ -233,7 +233,7 @@ def load(driver, crc, pir):
 	cont = 0
 	p = []
 	s = []
-	pair = []
+	#pair = []
 	while True:	
 		if count == 1 or count > 1:
 			load_file = "error404.html"
@@ -275,7 +275,7 @@ def load(driver, crc, pir):
 			ft = open("login/templates/load.html", "a+")
 			ft.write("<table>")
 			with open('login/templates/file.html', 'r') as f:
-				contents = f.read()
+				contents = f.read();pair = []
 
 				sup = BeautifulSoup(contents, 'html.parser');ft.write(str(sup.tr))
 				for child in sup.recursiveChildGenerator():
@@ -294,14 +294,12 @@ def load(driver, crc, pir):
 				ft.close()
 			load_file = "load.html"
 		else:
-			try:
-				os.remove('login/templates/loadpair.html')
-			except:
-				pass
+			#try:
+			os.remove('login/templates/loadpair.html')
 			ft = open("login/templates/loadpair.html", "a+")
 			#table = driver.find_element("xpath", "//div[@class='h7vnx2-1 kUATHk']")
 			with open('login/templates/load.html', 'r') as f:
-				contents = f.read();count = 0
+				contents = f.read();count = 0;
 				sup = BeautifulSoup(contents, 'html.parser')
 				li = sup.findAll('td')
 				tr = sup.findAll('tr')
@@ -309,11 +307,11 @@ def load(driver, crc, pir):
 					k = l.previous_sibling
 					if pir in l.text:
 						f = l.find_next_sibling("td");count += 1; 
-						g = f.text
+						g = str(f.text)
 						g = manual_replace(g, '', 0);pr.append(g);src.append(str(k.text))
-						if f is not None or f != "None":
-							p.append(g)
-							s.append(str(pir)+"("+str(k.text)+")")
+						#if f is not None or f != "None":
+						p.append(g)
+						s.append(str(l.text))
 				ft.write("<table><tbody>")
 				ft.write(str(sup.tr))
 				for t in tr:

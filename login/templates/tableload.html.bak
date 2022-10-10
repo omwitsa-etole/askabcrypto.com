@@ -1,23 +1,23 @@
 <h2 style="margin-left: 10%;">Pair: {{ pir }};	Percentage Difference(%)</h2><br>
 <table border="1px" style="border-collapse: collapse;" id="f-table">
 <tr>
-{% for i in range(0, m-1)%}
-	{% if i == 0 %}
+{% for i in range(1, m)%}
+	{% if i == 1 %}
 		<th></th>
 	{%endif%}
 	<th>{{ source[i] }}</th>
 {% endfor %}
 </tr>
-{%for j in range(0, n-1)%}
+{%for j in range(1, n)%}
 	<tr>
-	{% for i in range(0, m-1) %}
-		{%if i == 0%}
-			<td>{{s[i]}}</td>
+	{% for i in range(1, m) %}
+		{%if i == 1%}
+			<td>{{s[i]}}({{source[j]}})</td>
 		{%endif%}
-		{% if p1 == "Undefined" or p2[i] == "Undefined" %}
+		{% if p1[j] == "Undefined" or p2[i] == "Undefined" %}
 			<td style="background-color: #FF4500;">No data</td>
 		{% else %}
-			<td>{{((p2[i]*100)/p1[j])-100}}</td>
+			<td>{{((p2[i-6]/p1[j])*100)-100}}</td>
 		{%endif%}
 	{% endfor %}
 	</tr>
@@ -37,15 +37,19 @@ $(document).ready(function() {
 			text = cell.innerText;
 			console.log(text)
 			if(text != "Undefined" && text != "No data"){
-				text = parseInt(text);
+				text =  parseFloat(text);
 				if(text > 10){
 					cell.setAttribute("style", "background-color:green;"); 
+					$(this).text(text.toFixed(2));
 				}else if(text >= 5 && text <= 10){
-					cell.setAttribute("style", "background-color: #6B8E23;"); 
+					cell.setAttribute("style", "background-color: #6B8E23;");
+					$(this).text(text.toFixed(2));
 				}else if(text >= 1 && text <= 4){
 					cell.setAttribute("style", "background-color:#7CFC00;"); 
+					$(this).text(text.toFixed(2));
 				}else if(text < 1){
 					cell.setAttribute("style", "background-color:#98FB98;"); 
+					$(this).text(text.toFixed(2));
 				}
 							
 			}
