@@ -192,7 +192,7 @@ def other():
         sup = BeautifulSoup(contents, 'html.parser');
         li = sup.findAll("td")
         lt = sup.findAll("tr")
-         ft = open("login/templates/loadcap.html", "a+")
+        ft = open("login/templates/loadcap.html", "a+")
         ft.write("<style>td{max-width: 250px;overflow: hidden;font-size: 14px;}.coin-logo{display: none;}</style>")
         ft.write("<table><tbody>") 
         ft.write(str(sup.tr))
