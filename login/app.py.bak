@@ -194,24 +194,27 @@ def other():
         for l in li:
             k = l.previous_sibling
             if "$" in str(l.text):
-                if "Buy" not in str(k.text):
+                if "%" in str(k.text):
                     g = str(l.text)
                     g = manual_replace(g, '', 0);
+                    g = g[0:4]
+                    g = int(g)*1000000000
                     if cap is not None:
-                        if int(g) <= cap and str(l.text) not in fnd:
+                        if g <= int(cap) and str(l.text) not in fnd:
                             fnd.append(str(l.text))
                     else:
-                        fnd.append("$")   
+                        fnd.append("%")   
         ft = open("login/templates/loadcap.html", "a+")
-        ft.write("<style></style>")
+        ft.write("<style>td{max-width: 250px;overflow: hidden;font-size: 14px;}.coin-logo{display: none;}</style>")
         ft.write("<table><tbody>") 
         ft.write(str(sup.tr))        
         for t in lt:
             cont += 1
-            for i in fnd:
-                if i in str(t.text):
-                    ft.write(str(t))
-                    break
+            if "button" in str(t):
+                for i in fnd:
+                    if i in str(t.text):
+                        ft.write(str(t))
+                        break
         ft.write("</tbody></table>")
         ft.close()
     return render_template("other.html")
