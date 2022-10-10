@@ -206,7 +206,7 @@ def other():
                     g = g[0]
                     g = float(g)
                     if cap is not None:
-                        if float(g) <= cap and str(l) not in fnd:
+                        if float(g) <= cap:
                             if "button" in str(l.parent):
                                 ft.write(str(l.parent))
                     else:
