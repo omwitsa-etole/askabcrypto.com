@@ -180,7 +180,7 @@ def other():
     ft = open("login/templates/file2.html", "w")
     ft.write(str(soup))
     ft.close()
-    #os.remove("login/templates/loadcap.html")
+    os.remove("login/templates/loadcap.html")
     ft = open("login/templates/loadcap.html", "a+")
     ft.write("<table><tbody>")
     fnd = []

@@ -206,6 +206,7 @@ def other():
             for i in fnd:
                 if i in str(t.text):
                     ft.write(str(t))
+                    break
     ft.write("</tbody></table>")
     ft.close()
     return render_template("loadcap.html")
