@@ -203,6 +203,7 @@ def other():
                     else:
                         fnd.append("$")   
         ft = open("login/templates/loadcap.html", "a+")
+        ft.write("<style>td{max-width: 250px;overflow: hidden;font-size: 14px;}</style>")
         ft.write("<table><tbody>") 
         ft.write(str(sup.tr))        
         for t in lt:

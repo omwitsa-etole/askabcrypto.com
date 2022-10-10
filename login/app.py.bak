@@ -203,6 +203,7 @@ def other():
                     else:
                         fnd.append("$")   
         ft = open("login/templates/loadcap.html", "a+")
+        ft.write("<style></style>")
         ft.write("<table><tbody>") 
         ft.write(str(sup.tr))        
         for t in lt:
@@ -211,8 +212,8 @@ def other():
                 if i in str(t.text):
                     ft.write(str(t))
                     break
-    ft.write("</tbody></table>")
-    ft.close()
+        ft.write("</tbody></table>")
+        ft.close()
     return render_template("other.html")
 @app.route('/cap')
 def cap():

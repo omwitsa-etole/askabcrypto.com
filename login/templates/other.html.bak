@@ -242,7 +242,12 @@ body{
   margin-left: 45%;
   margin-top: 15%;
 }
-
+td{
+	max-width: 250px;
+	max-height: 80px;
+	overflow: hidden;
+	font-size: 14px;
+}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -258,7 +263,7 @@ body{
       <li></li>
       <li></li>
       <li>
-        <a id="m1" href="{{ url_for('dashboard') }}"  data-toggle="pill" class="nav-link">
+        <a id="m1" href="{{ url_for('re_home') }}"  data-toggle="pill" class="nav-link">
           <i class="fa fa-home" aria-hidden="true"></i>Dashboard
         </a>
       </li>
