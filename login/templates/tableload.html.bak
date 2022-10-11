@@ -17,7 +17,7 @@
 		{% if p1[j] == "Undefined" or p2[i] == "Undefined" %}
 			<td style="background-color: #FF4500;">No data</td>
 		{% else %}
-			<td>{{((p2[i]/p1[j])*100)-100}}</td>
+			<td>{{((p2[i-1]/p1[j-1])*100)-100}}</td>
 		{%endif%}
 	{% endfor %}
 	</tr>
@@ -41,10 +41,10 @@ $(document).ready(function() {
 				if(txt > 10){
 					cell.setAttribute("style", "background-color:green;"); 
 					$(this).text(txt.toFixed(2));
-				}else if(txt >= 5 && text <= 10){
+				}else if(txt >= 5 && txt <= 10){
 					cell.setAttribute("style", "background-color: #6B8E23;");
 					$(this).text(txt.toFixed(2));
-				}else if(txt >= 1 && text <= 4){
+				}else if(txt >= 1 && txt <= 4){
 					cell.setAttribute("style", "background-color:#7CFC00;"); 
 					$(this).text(txt.toFixed(2));
 				}else if(txt < 1){

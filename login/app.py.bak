@@ -209,6 +209,7 @@ def other():
                         if int(g) <= int(cap):
                             if "button" in str(l.parent):
                                 ft.write(str(l.parent))
+                       
                     else:
                        if "button" in str(l.parent):
                            ft.write(str(l.parent)) 
@@ -220,6 +221,10 @@ def cap():
     return render_template("loadcap.html")
 @app.route('/dashboard')
 def re_home():
+    if session.get("loggedin") == None or session.get("loggedin") == "None":
+        return redirect("/account/login")
+    if request.method == 'POST' and "pair" in request.form:
+        return redirect("/")
 	global source
 	global pair
 	global load_file

@@ -221,14 +221,18 @@ def cap():
     return render_template("loadcap.html")
 @app.route('/dashboard')
 def re_home():
-	global source
-	global pair
-	global load_file
-	global p
-	global s
-	global currency
-	global pir
-	return render_template('index.html', currency = session['currency'], urls = source, n = len(s), m = len(p), pairs = pair, pir=pir, p = p, s = s)
+    if session.get("loggedin") == None or session.get("loggedin") == "None":
+        return redirect("/account/login")
+    if request.method == 'POST' and "pair" in request.form:
+        return redirect("/")
+    global source
+    global pair
+    global load_file
+    global p
+    global s
+    global currency
+    global pir
+    return render_template('index.html', currency = session['currency'], urls = source, n = len(s), m = len(p), pairs = pair, pir=pir, p = p, s = s)
 @app.route('/filter')
 @app.route('/', methods =['GET', 'POST'])
 def home():
