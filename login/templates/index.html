@@ -14,9 +14,10 @@ body{
 	margin-top: 10%;
 	width: 89%;
 	margin-left: 11%;
-	height: 350px;
+	height: 400px;
 	max-height: 500px;
 	overflow: auto;
+	overflow-x: auto;
 	box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 	border-radius: 9px;
 	background: white;
@@ -265,7 +266,11 @@ body{
         </a>
       </li>
       <li></li>
-      
+      <li>
+        <a id="m2" href="{{ url_for('other') }}"  class="nav-link">
+          <i class="fa fa-gear"></i> GEMS
+        </a>
+      </li>
     </ul>
   </div>
 <div class="profile">
@@ -285,7 +290,7 @@ body{
 	<option value="{{ u }}">{{ u }}</option>
 {% endfor %}
 </datalist>
-<select name="pair" class="st" id="pair"><option value="">Change Pair</option>
+<select name="pair" class="st" id="pair"><option value="null">Change Pair</option>
 {% for p in pairs %}
 	<option value="{{ p }}">{{ p }}</p>
 {% endfor%}
@@ -296,11 +301,9 @@ body{
 <a id="m3" href="{{ url_for('logout') }}"><i class="fa fa-signout" aria-hidden="true"></i>logout</a>
 </div>
 <div class="page_load" id="page_load">
-<div id="loadingDiv" class="loader"></div>
+{{ res|safe }}
 </div>
 <div class="page_load ii" id="page_load2">
-<div id="loadingDiv2" class="loader"></div>
-
 </div>
 </body>
 <script>
@@ -308,26 +311,11 @@ function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
    }
 $(document).ready(function() {
-	//$("#page_load").load("{{ url_for('fetcher') }}");
-	//$("#page_load2").load("{{ url_for('fetcher') }}");
-	$.ajaxSetup({async: false});
-	//$.post('/', {currency:'', pair:''});
-	$("#page_load").load("{{ url_for('loader') }}");
-	$("#page_load2").load("{{ url_for('table_load') }}");
-	//$("#page_load2").load("error404.html");
-	refresh();
+	//refresh();
 });
 var $loading = $('#loadingDiv').hide();
 var $loading2 = $('#loadingDiv2').hide();
-$(document)
-  .ajaxStart(function () {
-    $loading.show();
-    $loading2.show();
-  })
-  .ajaxStop(function () {
-    $loading.hide();
-    $loading2.hide();
-  });
+
 window.onclick = function(event) {
 	if (!event.target.matches('.fa')) {
 		var x = document.getElementsByClassName('profile_options');
@@ -340,14 +328,10 @@ window.onclick = function(event) {
 }
 function loadpage(){
 	var cur = document.getElementById("hcur");
-	var pr = document.getElementById("pair");
-	//$.ajaxSetup({async: false});
-	$("#page_load").load("{{ url_for('loader') }}");
+	var pr = document.getElementById("page_load");
 	$.ajaxSetup({async: false});
+	pr.write("{{ res|safe }}");
 	$("#page_load2").load("{{ url_for('table_load') }}");
-	console.log("{{currency}}")
-	cur.innerText = "{{ session['currency'] }}";
-	document.getElementById("currency").value = "{{ session['currency'] }}";
 	//x.value='{{currency}}';
 }
 function refresh(){
@@ -363,12 +347,7 @@ function fetchData(){
 	var pr = document.getElementById("pair");
 	$("#page_load").load("{{ url_for('fetcher') }}");
 	$("#page_load2").load("{{ url_for('fetcher') }}");
-	$.ajaxSetup({async: false});
-	$.post('/', {currency:'{{currency}}', pair:pr.value});
-	$("#page_load").load("{{ url_for('loader') }}");
-	$("#page_load2").load("{{ url_for('table_load') }}");
-	refresh();
-	return false;
+	return true;
 }
 function menuClick(id, val){
 	var x = document.getElementsByClassName('nav_link');
