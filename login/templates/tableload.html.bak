@@ -8,16 +8,16 @@
 	<th>{{ source[i-1] }}</th>
 {% endfor %}
 </tr>
-{%for j in range(0, n)%}
+{%for j in range(0, n-1)%}
 	<tr>
 	{% for i in range(0, m) %}
 		{%if i == 0%}
-			<td>{{s[i]}}({{source[j-1]}})</td>
+			<td>{{s[i]}}({{source[j]}})</td>
 		{%endif%}
 		{% if p1[j] == "Undefined" or p2[i] == "Undefined" %}
 			<td style="background-color: #FF4500;">No data</td>
 		{% else %}
-			<td>{{((p2[i-1]/p1[j-1])*100)-100}}</td>
+			<td>{{((p2[i-1]/p1[j])*100)-100}}</td>
 		{%endif%}
 	{% endfor %}
 	</tr>
