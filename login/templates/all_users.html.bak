@@ -22,7 +22,7 @@
 	{% else %}
 		<td>True</td>
 	{% endif %}
-	<td ><button name="{{ account[1] }}" class="a" onclick="message(this.name)" title="send message">Message</button><button title="delete user" class="a" style="background: red;color: white;" name="{{ account[1] }}" onclick="del(this.name)">Delete</button></td>
+	<td ><button name="{{ account[1] }}" class="a" onclick="message(this.name)">Message</button><button class="a" style="background: red;color: white;" name="{{ account[1] }}" onclick="del(this.name)">Delete</button></td>
 	</tr>
 {% endfor %}
 </table>

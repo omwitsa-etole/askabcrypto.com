@@ -158,8 +158,7 @@ h1{
     </div>
   </div>
  <h1 class="second-four">4</h1>
-  <p class="wrong-para">Uh Oh! {{msg}}!<br><a href="{% url for ('loader')%}">Reload page</a><br></p><br>
-<p><a href="{% url for ('loader')%}">Reload page</a></p>
+  <p class="wrong-para">Uh Oh! {{msg}}!<br><a href="{{ url_for('home') }}">Reload page</a><br></p><br>
 </div>
 <script>
 let t1 = gsap.timeline();

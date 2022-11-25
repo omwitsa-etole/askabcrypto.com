@@ -1,0 +1,79 @@
+from bs4 import BeautifulSoup
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager as CM
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium import webdriver
+from selenium.webdriver import ActionChains
+from selenium.webdriver.chrome.service import Service
+import pandas as pd
+import time
+
+def cre():
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--no-sandbox")
+    #chrome_options.add_argument('--headless')
+    chrome_options.add_argument("disable-dev-shm-usage")
+    driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
+    driver.set_window_size(600, 800)
+    driver.get("https://coinmarketcap.com")
+    time.sleep(1)
+    driver.execute_script("window.scrollTo(0, 100)")
+    time.sleep(1)
+    try:
+        btns = driver.find_element("xpath", "//div[@class='sc-1hxnufv-5 fmuRvw']/span/button")
+        btns.click()
+        time.sleep(2)
+        btns = driver.find_element("xpath", "//ul[@class='sc-1erqz0q-0 kSFTVn']/li/button")
+        btns.click()
+        time.sleep(2)
+        btns = driver.find_element("xpath", "//div[@class='sc-1prm8qw-0 iOTWDK filter-area']/div[2]/button")
+        btns.click()
+        time.sleep(2)
+        least = driver.find_element("xpath", "//div[@class='cmc-input-row']/input")
+        least.send_keys("0")
+        time.sleep(2)
+        lmax = driver.find_element("xpath", "//div[@class='cmc-input-row']/input[2]")
+        lmax.send_keys("1000000")
+        try:
+            driver.find_element("xpath", "//div[@class='cmc-cookie-policy-banner__close']").click()
+        except:
+            pass
+        time.sleep(2)
+        try:
+            driver.find_element("xpath", "//button[text()='Maybe later']").click()
+        except:
+            pass
+        driver.find_element("xpath", "//div[@class='sc-1prm8qw-0 cyZVgY']/div/button").click()
+        time.sleep(1)
+        driver.find_element("xpath", "//div[@class='sc-1prm8qw-0 sc-1o74f6b-0 cFWVia']/button").click()  
+        time.sleep(1)
+        driver.maximize_window()
+        time.sleep(1)
+        driver.execute_script("window.scrollTo(0, 1000)")
+        table = driver.find_element("xpath", "//div[@class='h7vnx2-1 bFzXgL']")
+        sup = table.get_attribute('innerHTML') 
+        soup = BeautifulSoup(sup, 'html.parser')
+        tr = soup.findAll('a')
+        for t in tr:
+            if "binance" in str(t['href']):
+                t['href'] = ("https://www.binance.me/en/activity/referral-entry/CPA?fromActivityPage=true&ref=CPA_00RSB100UL")
+            if "kucoin" in str(t['href']):
+                t['href'] = ("https://www.kucoin.com/r/rf/rJSD9K2")
+            if "poloniex" in str(t['href']):
+                t['href'] = ("https://m.poloniex.com/signup?c=2GLVHNQQ")
+            if "ruyiwallet" in str(t['href']):
+                t['href'] = ("https://www.ruyiwallet.com/ucenter/web/invite?invite_code=9jWZLM")
+            if "mexc" in str(t['href']):
+                t['href'] = ("https://m.mexc.com/auth/signup?inviteCode=1V5Ep")
+            if "hotbit" in str(t['href']):
+                t['href'] = ("https://www.hotbit.io/register?ref=2260175")
+        capped = str(soup)
+        print(capped)
+    except Exception as e:
+        print(str(e))
+        pass
+        
+
+cre()

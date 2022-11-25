@@ -148,7 +148,7 @@ h2{
       <li></li>
       <li></li>
       <li>
-        <a id="m1" href="{{ url_for('re_home') }}" data-toggle="pill" class="nav-link">
+        <a id="m1" href="{{ url_for('home') }}" data-toggle="pill" class="nav-link">
           <i class="fa fa-home" aria-hidden="true"></i>Dashboard
         </a>
       </li>
@@ -159,6 +159,11 @@ h2{
         </a>
       </li>
       <li></li>
+	  <li>
+        <a id="m2" href="{{ url_for('other') }}"  class="nav-link">
+          <i class="fa fa-gear"></i> GEMS
+        </a>
+      </li>
       <li>
         <a id="m3" href="{{ url_for('logout') }}"  class="nav-link">
           <i class="fa fa-sign-out" aria-hidden="true"></i> Log out

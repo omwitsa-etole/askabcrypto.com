@@ -68,7 +68,7 @@
             </div>
             <button type="submit" onsubmit="return loader()" class="button is-block is-info is-large is-fullwidth">Login</button>
         </form>
-		<center><p><a href="{{url_for('admin_home')}}">Admin</a></p></center>
+		<center><p><a href="url_for('admin_login')">Admin</a></p></center>
 	<p style="font-size: 18px;">Dont have an account, <a href="/account/signup" style="color: green;text-decoration: none;cursor: pointer;">Sign up</a></p>
     </div>
 </div>

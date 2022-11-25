@@ -16,26 +16,49 @@ import requests
 import random
 import os
 import sqlite3
-#from flask_login import current_user
+from datetime import date
 
+today = date.today()
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument('--headless')
 chrome_options.add_argument("disable-dev-shm-usage")
-#chrome_options.binary_location = "/app/.apt/usr/bin/google-chrome-stable"
-driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
-#driver = webdriver.Chrome(options=chrome_options)
-driver.execute_script("window.open('');")
+#driver = webdriver.Chrome(service=Service(CM().install()), options=chrome_options)
+driver = webdriver.Chrome(options=chrome_options)
 conn = sqlite3.connect('coinmarketcap-database.sqlite3')
-conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
+conn.execute('CREATE TABLE IF NOT EXISTS accounts (username VARCHAR(100)  NOT NULL, email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL, approved VARCHAR(1) NOT NULL, datetime VARCHAR(100) NOT NULL)')
+conn.close()
+
+conn = sqlite3.connect('coinmarketcap-database.sqlite3')
+conn.execute('CREATE TABLE IF NOT EXISTS messages (email VARCHAR(100)  NOT NULL, message TEXT(2000), datetime VARCHAR(100) NOT NULL)')
 conn.close()
  
 app = Flask(__name__)
 
 try:
     with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+       	cursor = con.cursor()
+        cursor.execute('SELECT * FROM accounts WHERE username OR email = ?',["omwitsa-etole@gmail.com"])
+        acc = cursor.fetchone()
+        if not acc:
+            cursor.execute('INSERT INTO accounts (username, email, password, approved, datetime) VALUES (?, ?, ?, ?, ?)', ["omwitsa-etole@gmail.com", "omwitsa-etole@gmail.com", "lov", "0", str(today)])
+except:
+    con.rollback()
+    msg = "error during account creation"
+finally:
+    con.commit()
+    con.close()
+
+conn = sqlite3.connect('askabcrypto-database.sqlite3')
+conn.execute('CREATE TABLE IF NOT EXISTS admins (email VARCHAR(100)  NOT NULL, password VARCHAR(100)  NOT NULL)')
+conn.close()
+try:
+    with sqlite3.connect("askabcrypto-database.sqlite3") as con:
         cursor = con.cursor()
-        cursor.execute('INSERT INTO accounts (username, email, password) VALUES (?, ?, ?)', ["omwitsa-etole@gmail.com", "omwitsa-etole@gmail.com", "lov"])
+        cursor.execute('SELECT * FROM admins WHERE email = ?',["omwitsa-etole@gmail.com"])
+        acc = cursor.fetchone()
+        if not acc:
+            cursor.execute('INSERT INTO admins (email, password) VALUES (?, ?)', ["omwitsa-etole@gmail.com", "lov"])
 except:
     con.rollback()
     msg = "error during account creation"
@@ -57,40 +80,222 @@ source = []
 pair = []
 s = []
 p = []
-pir = ""
-currency = ""
+pir = None
+currency = None
 load_file = "load.html"
+res = ""
+res_first = ""
+new_res = ""
+accounts = None
+accts = None
+msge = None
 
 def manual_replace(s, char, index):
     return s[:index] + char + s[index +1:]
 
 @app.route('/logout')
 def logout():
-	session['loggedin'] = None
-	session['username'] = None
+	session.clear()
 	return redirect('/account/login')
-@app.route('/account/login', methods=['GET', 'POST'])
-def login():
-	global load_file
-	load_file = "load.html"
-	msg = 'msg'
+
+@app.route("/message", methods=['GET', 'POST'])
+def message():
+    global msge
+    if request.method == 'POST' and 'email' in request.form and 'msg' in request.form:
+        email = request.form["email"]
+        msg = request.form["msg"]
+        try:
+            with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+                cursor = con.cursor()
+                cursor.execute('INSERT INTO messages (email, message, datetime) VALUES(?, ?, ?)', [email, msg, str(today)])
+                msge = "message sent"
+        except:
+            con.rollback()
+            msge = "error during transaction"
+        finally:
+            con.commit()
+            con.close()
+    return redirect("/admin")
+        
+#@app.route("/message/<username>", methods=['GET', 'POST'])
+def fetch_message(username):
+    global msge
+    msge = None
+    if username:
+        with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+            cursor = con.cursor()
+            cursor.execute('SELECT * FROM messages WHERE email = ?',[username])
+            acts = cursor.fetchall()
+            if len(acts) != 0:
+                msge = "you have "+str(len(acts))+" new messages";
+            else:
+                msge = "none"
+    return msge
+@app.route("/message/<username>", methods=['GET', 'POST'])
+def load_message(username):
+    accts = None
+    if username:
+        with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+            cursor = con.cursor()
+            cursor.execute('SELECT * FROM messages WHERE email = ?',[username])
+            accts = cursor.fetchall()
+    return render_template("messages.html", accts = accts)
+@app.route("/admin")
+def admin_home():
+	global accounts
+	global accts
+	global msge
+	accounts = None
+	if session.get("adm-loggedin") == None or session.get("adm-loggedin") == "None":
+        	return redirect("/admin/login")
+	with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+		cursor = con.cursor()
+		cursor.execute('SELECT * FROM accounts WHERE approved = ?',["0"])
+		accounts = cursor.fetchall()
+		cursor.execute('SELECT * FROM accounts')
+		accts = cursor.fetchall()
+	return render_template("admin.html", msg = msge, accounts = accounts, users = len(accts))
+@app.route("/admin/login", methods=['GET', 'POST'])
+def admin_login():
+	msg = None
 	if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
 		username = request.form['username']
 		password = request.form['password']
-		with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
-			cursor = con.cursor()
-			cursor.execute('SELECT * FROM accounts WHERE username OR email = ? AND password = ?',[username, password])
+		with sqlite3.connect("askabcrypto-database.sqlite3") as conn:
+			cursor = conn.cursor()
+			cursor.execute('SELECT * FROM admins WHERE email = ? AND password = ?',[username, password])
 			account = cursor.fetchone()
 			if account:
-				session['loggedin'] = True
-				session['username'] = account[1]
-				session['name'] = account[0]
+				session['adm-loggedin'] = True
+				session['username'] = account[0]
 				msg = 'Logged in successfully !'
-				return redirect("/")
+				return redirect("/admin")
 			else:
 				msg = 'Incorrect username / password !'
-				return render_template('login.html', msg = msg)
-	return render_template('login.html', msg = msg)
+				return render_template('admin-login.html', msg = msg)
+			conn.close()
+	return render_template('admin-login.html', msg = msg)
+@app.route("/admin/approve", methods=['GET', 'POST'])
+def approve():
+	global accts
+	global accounts
+	global msge
+	if session.get("adm-loggedin") == None or session.get("adm-loggedin") == "None":
+        	return redirect("/admin/login")
+	global accounts
+	if request.method == 'POST' and 'user' in request.form:
+		username = request.form["user"]
+		co =  sqlite3.connect("coinmarketcap-database.sqlite3")
+		cursor = co.cursor()
+		cursor.execute('SELECT * FROM accounts WHERE username OR email = ?',[username])
+		account = cursor.fetchone()
+		if account:
+			try:
+				cursor.execute('UPDATE accounts SET approved = ? WHERE username OR email = ?',["1", username])
+				msge = "User approved successfully"
+			except Exception as e:
+				co.rollback()
+				msge = "Error during action"
+				pass
+			finally:
+				co.commit()
+				co.close()
+	else:
+		msge = "Error during action"
+	return redirect("/admin")
+@app.route("/admin/all_users")
+def get_users():
+	global accts
+	global accounts
+	with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+		cursor = con.cursor()
+		cursor.execute('SELECT * FROM accounts')
+		accts = cursor.fetchall()
+		#con.close()
+	return render_template("all_users.html", accounts = accts)
+
+@app.route("/admin/signup", methods = ['GET', 'POST'])
+def create_user():
+	global accts
+	global accounts
+	global msge
+	if request.method == 'POST' and 'username' in request.form and 'email' in request.form and 'password' in request.form:
+		username = request.form["username"]
+		email = request.form["email"]
+		password = request.form["password"]
+		try:
+			with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+				cursor = con.cursor()
+				cursor.execute('SELECT * FROM accounts WHERE username or email = ?',[email])
+				acc = cursor.fetchone()
+				if not acc:
+					cursor.execute('INSERT INTO accounts (username, email, password, approved, datetime) VALUES (?, ?, ?, ?, ?)', [username, email, password, "0", str(today)])
+					msge = "Account created successfully"
+				else:
+					msge = "User account already exists"
+		except Exception as e:
+			print(str(e))
+			con.rollback()
+			msge = "error during account creation"
+		finally:
+			con.commit()
+			con.close()
+	else:
+		msge = "Provide all field details"
+	return redirect("/admin")
+@app.route("/admin/remove", methods = ['GET', 'POST'])
+def remove_user():
+	global msge
+	if request.method == 'POST' and 'user' in request.form:
+		email = request.form["user"]
+		try:
+			with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+				cursor = con.cursor()
+				cursor.execute('SELECT * FROM accounts WHERE username or email = ?',[email])
+				acc = cursor.fetchone()
+				if acc:
+					cursor.execute('DELETE FROM accounts WHERE username or email = ?',[email])
+					msge = "Account deleted successfully"
+				else:
+					msge = "Error exists during transaction"
+		except Exception as e:
+			print(str(e))
+			con.rollback()
+			msge = "error during account creation"
+		finally:
+			con.commit()
+			con.close()
+	return redirect("/admin")
+    
+def check_approve(account):
+    if account[3] == "0":
+        msg = 'Account not yet approved'
+        return msg
+    else:
+        return None
+@app.route('/account/login', methods=['GET', 'POST'])
+def login():
+    global load_file;global msge
+    load_file = "load.html"
+    msg = 'msg'
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        username = request.form['username']
+        password = request.form['password']
+        with sqlite3.connect("coinmarketcap-database.sqlite3") as con:
+            cursor = con.cursor()
+            cursor.execute('SELECT * FROM accounts WHERE username OR email = ? AND password = ?',[username, password])
+            account = cursor.fetchone();ch = check_approve(account)
+            if account and ch == None:
+                session['loggedin'] = True
+                session['username'] = account[1]
+                session['name'] = account[0]
+                msg = 'Logged in successfully !';
+                
+                return redirect("/")
+            else:
+                msg = 'Account not yet approved!'
+                return render_template('login.html', msg = msg)
+    return render_template('login.html', msg = msg)
 	
 @app.route('/account/signup', methods=['GET', 'POST'])
 def register():
@@ -120,7 +325,7 @@ def register():
 				if not username or not password or not email or not password2:
 				    msg = 'Please fill out the fields !'
 				else:
-				    cursor.execute('INSERT INTO accounts (username, email, password) VALUES (?, ?, ?)', [username, email, password])
+				    cursor.execute('INSERT INTO accounts (username, email, password, approved, datetime) VALUES (?, ?, ?, ?, ?)', [username, email, password, "0", str(today)])
 				    msg = 'Account created successfully'
 		except:
 			con.rollback()
@@ -136,104 +341,323 @@ def fetcher():
 
 @app.route('/t',methods =['GET', 'POST'])
 def table_load():
-	global p
-	global s
-	global src
-	global pr
-	global currency;global pir
-	p1 = []
-	p2 = [];
-	for i in range(0, len(s)-1):
-		p1.append(float(p[i]))
-	for i in range(0, len(src)-1):
-		p2.append(float(pr[i]))
-	return render_template("tableload.html",m = len(src), n = len(p), p = p, s = s, pir=pir, p1 = p1, p2 = p2, source = src)
+    global p;
+    global s
+    global src
+    global pr
+    global currency
+    global pir
+    p1 = []
+    p2 = [];
+    if len(p) > 1 and len(pr) > 0:
+        for i in p:
+            p1.append(float(i))
+        for i in pr:
+            p2.append(float(i))
+    return render_template("tableload.html",m = len(src), n = len(p), p = p, s = s, pir=pir, p1 = p1, p2 = p2, source = src)
 
 @app.route('/f', methods =['GET', 'POST'])
 def loader():
 	global load_file
 	msg = ""
-	if load_file == "load.html":
-		with open(r"login/templates/load.html", 'r') as fp:
-			lines = len(fp.readlines())
-	else:
-		with open(r"login/templates/loadpair.html", 'r') as fp:
-			lines = len(fp.readlines())
-	count = int(lines)
-	if count + 1 < 2:
-		load_file = "error404.html"
-		msg = "Data could not be loaded"
+	#print(load_file)
+	lines = 0
 	if request.method=="POST" or request.method =="GET":
-		return render_template(load_file, currency = currency, msg = msg)
-	return render_template(load_file, currency = currency, msg = msg)
+		fp = open("login/templates/load.html", 'r')
+		lines = len(fp.readlines())
+		cont = int(lines);cont = cont + 1;
+		if cont < 2:
+			return_redirect("/g")
+	
+	return render_template("load.html", currency = currency, msg = msg)
 
+@app.route('/g', methods =['GET', 'POST'])
+def loader2():
+	global load_file
+	msg = ""
+	#print(load_file)
+	lines = 0
+	if request.method=="POST" or request.method =="GET":
+		fp = open("login/templates/loadpair.html", 'r')
+		lines = len(fp.readlines())
+		cont = int(lines);cont = cont + 1;
+		if cont < 2:
+			return_redirect("/f")
+	
+	return render_template("loadpair.html", currency = currency, msg = msg)
+
+def pret(cap):
+    try:
+        time.sleep(1)
+        try:
+            #driver.find_element("xpath", "//div[@id='cmc-cookie-policy-banner']").click()
+            driver.find_element("xpath", "//button[text()='Filters']").click()
+        except Exception as e:
+            print(str(e))
+            pass
+        try:
+            driver.switch_to.window(driver.window_handles[0])
+        except:
+            pass
+        time.sleep(2)
+        btns = driver.find_elements(By.TAG_NAME, "button")
+        for btn in btns:
+            if "Add Filter" in str(btn.text):
+                btn.click()
+                break
+        time.sleep(2)
+        
+        btns = driver.find_elements(By.TAG_NAME, "button")
+        for btn in btns:
+            if "Market Cap" in str(btn.text):
+                btn.click()
+                break
+        
+        time.sleep(1)
+        least = driver.find_element("xpath", "//input[@placeholder='$0']")
+        least.send_keys("0")
+        time.sleep(1)
+        lmax = driver.find_element("xpath", "//input[@placeholder='$999,999,999,999']")
+        lmax.send_keys(cap)
+        try:
+            driver.find_element("xpath", "//div[@class='cmc-cookie-policy-banner__close']").click()
+            driver.find_element("xpath", "//button[text()='Maybe later']").click()
+            driver.find_element("xpath", "//div[@class='sc-67bdc129-2 euMFmi cmc-input-row']/button").click()
+        except:
+            pass
+        time.sleep(1)
+       
+        try:
+            driver.find_element("xpath", "//span[text()='Maybe later']").click()
+        except:
+            pass
+        try:
+            driver.find_element("xpath", "//button[text()='Apply Filter']").click()
+            time.sleep(2)
+            driver.find_element("xpath", "//button[text()='Show results']").click()
+        except:
+            pass
+    except Exception as e:
+        print(str(e))
+        pass
+    
+    
 @app.route('/other', methods =['GET', 'POST'])
 def other():
-    cap = None
-    if request.method == 'POST' and "cap" in request.form:
-        cap = request.form["cap"]
-    driver.get("https://coinmarketcap.com")
-    time.sleep(2)
-    driver.execute_script("window.scrollTo(0, 2000)")
-    table = driver.find_element("xpath", "//div[@class='h7vnx2-1 bFzXgL']")
-    soup = table.get_attribute('innerHTML') 
-    ft = open("login/templates/file2.html", "w")
-    ft.write(str(soup))
-    ft.close()
-    try:
-        os.remove("login/templates/loadcap.html")
-    except:
-        pass
-    fnd = []
-    cont = 0
-    with open('login/templates/file2.html', 'r') as f:
-        contents = f.read();
-        sup = BeautifulSoup(contents, 'html.parser');
-        li = sup.findAll("td")
-        lt = sup.findAll("tr")
-        ft = open("login/templates/loadcap.html", "a+")
-        ft.write("<style>td{max-width: 250px;overflow: hidden;font-size: 14px;}.coin-logo{display: none;}</style>")
-        ft.write("<table><tbody>") 
-        ft.write(str(sup.tr))
-        for l in li:
-            k = l.previous_sibling
-            if "$" in str(l.text):
-                if "%" in str(k.text):
-                    g = str(l.text)
-                    g = manual_replace(g, '', 0);
-                    g = g.split("B")
-                    g = g[0]
-                    g = float(g)*1000000000
-                    #print(str(g)+":"+str(cap))
-                    if cap is not None:
-                        if int(g) <= int(cap):
-                            if "button" in str(l.parent):
-                                ft.write(str(l.parent))
-                       
-                    else:
-                       if "button" in str(l.parent):
-                           ft.write(str(l.parent)) 
-        ft.write("</tbody></table>")
-        ft.close()
-    return render_template("other.html")
+	#try:
+	cap = None
+	driver.get("https://coinmarketcap.com");driver.set_window_position(0, 0);driver.set_window_size(900, 768)
+	time.sleep(1)
+	if request.method == 'POST' and "cap" in request.form:
+		cap = request.form["cap"]
+		
+		driver.execute_script("window.scrollTo(0, 400)")
+		pret(cap)
+		#driver.maximize_window()
+		driver.execute_script("window.scrollTo(0, 2000)")
+		time.sleep(1)
+		table = driver.find_element("xpath", "//table")
+		sup = table.get_attribute('innerHTML') 
+		capped = "<style>body{font-size: 12.5px;}a{text-decoration: none;}.sc-65d3c89-0{display: none;}td{max-width: 250px;overflow: hidden;font-size: 12px;}.coin-logo{display: none;}.sc-289ac22e-0{display: none;}.POZfD{display: none;}</style><table><tbody>"
+		soup = BeautifulSoup(sup, 'html.parser')
+		tr = soup.findAll('a')
+		tl = soup.findAll('tr')
+		for t in tr:
+		    if "binance" in str(t['href']):
+		        t['href'] = ("https://www.binance.me/en/activity/referral-entry/CPA?fromActivityPage=true&ref=CPA_00RSB100UL")
+		    if "kucoin" in str(t['href']):
+		        t['href'] = ("https://www.kucoin.com/r/rf/rJSD9K2")
+		    if "poloniex" in str(t['href']):
+		        t['href'] = ("https://m.poloniex.com/signup?c=2GLVHNQQ")
+		    if "ruyiwallet" in str(t['href']):
+		        t['href'] = ("https://www.ruyiwallet.com/ucenter/web/invite?invite_code=9jWZLM")
+		    if "mexc" in str(t['href']):
+		        t['href'] = ("https://m.mexc.com/auth/signup?inviteCode=1V5Ep")
+		    if "hotbit" in str(t['href']):
+		        t['href'] = ("https://www.hotbit.io/register?ref=2260175")
+		for t in tl:
+			if "%" in str(t.text):
+				capped = capped+"\n"+str(t)
+		capped = capped+"</tbody><table>"
+	else:
+		driver.execute_script("window.scrollTo(0, 2000)")
+		time.sleep(1)
+		table = driver.find_element("xpath", "//table")
+		sup = table.get_attribute('innerHTML') 
+		soup = BeautifulSoup(sup, 'html.parser')
+		tr = soup.findAll('a')
+		for t in tr:
+			if "binance" in str(t['href']):
+				t['href'] = ("https://www.binance.me/en/activity/referral-entry/CPA?fromActivityPage=true&ref=CPA_00RSB100UL")
+			if "kucoin" in str(t['href']):
+				t['href'] = ("https://www.kucoin.com/r/rf/rJSD9K2")
+			if "poloniex" in str(t['href']):
+				t['href'] = ("https://m.poloniex.com/signup?c=2GLVHNQQ")
+			if "ruyiwallet" in str(t['href']):
+				t['href'] = ("https://www.ruyiwallet.com/ucenter/web/invite?invite_code=9jWZLM")
+			if "mexc" in str(t['href']):
+				t['href'] = ("https://m.mexc.com/auth/signup?inviteCode=1V5Ep")
+			if "hotbit" in str(t['href']):
+				t['href'] = ("https://www.hotbit.io/register?ref=2260175")
+		ccd = str(soup)
+		contents = ccd
+		sup = BeautifulSoup(contents, 'html.parser');
+		li = sup.findAll("td")
+		lt = sup.findAll("tr")
+		capped = "<style>body{font-size: 12.5px;}.sc-65d3c89-0{display: none;}a{text-decoration: none;}td{max-width: 250px;overflow: hidden;font-size: 12px;}.coin-logo{display: none;}.th{position: sticky;top: 50px;background: white;}.sc-289ac22e-0{display: none;}.POZfD{display: none;}</style>"
+		capped = capped+"\n<table><tbody>"
+		for t in lt:
+			if "%" in str(t.text):
+				capped = capped+"\n"+str(t)
+		capped = capped+"\n</tbody></table>"
+	return render_template("other.html", capped = capped)
 @app.route('/cap')
 def cap():
-    return render_template("loadcap.html")
-@app.route('/dashboard')
-def re_home():
-    if session.get("loggedin") == None or session.get("loggedin") == "None":
-        return redirect("/account/login")
-    if request.method == 'POST' and "pair" in request.form:
-        return redirect("/")
+	fp = open("login/templates/loadcap.html", 'r')
+	lines = len(fp.readlines())
+	cont = int(lines);cont = cont + 1;
+	if cont < 2:
+		return_redirect("/c")
+	return render_template("loadcap.html")
+@app.route('/c')
+def cp():
+	fp = open("login/templates/load2.html", 'r')
+	lines = len(fp.readlines())
+	cont = int(lines);cont = cont + 1;
+	if cont < 2:
+		return_redirect("/cap")
+	return render_template("load2.html")
+
+
+def get_currencies():
+    global source
+    
+def get_dicts(re, trs, tds):
+    count = 0
+    
+    dicts = {}
+    while count <= len(re)-1:
+        tr_list = []
+        for tr in trs:
+            if "eXVyON" in str(tr):
+                for td in tds:
+                    if "eXVyON" in str(td) and str(td) in str(tr):
+                        price = str(td.text)
+                        while True:
+                            if "$" not in price and "*" not in price:
+                                try:
+                                    price = price.replace(",", "")
+                                except:
+                                    pass
+                                break
+                       
+                            if "$" in price or "*" in price:
+                                price = manual_replace(price, '', 0)
+                        if str(price) == str(re[count]):
+                                tr_list.append(str(tr))                
+        dicts[re[count]] = tr_list
+        count = count + 1
+    return dicts
+
+@app.route("/res/<mode>", methods=['GET']) 
+def arrange(mode):
     global source
     global pair
-    global load_file
     global p
     global s
     global currency
     global pir
-    return render_template('index.html', currency = session['currency'], urls = source, n = len(s), m = len(p), pairs = pair, pir=pir, p = p, s = s)
+    global msge
+    global res
+    global res_first
+    if request.method == 'GET' and mode:   
+        try:
+            re = []
+            sup = BeautifulSoup(res_first, 'html.parser')
+            trs = sup.findAll("tr")
+            tds = sup.findAll("p")
+            
+            old_price = 0.0
+            new_price = old_price
+            res_t = sup.tr
+            if mode == "ascending":
+                dicts = {}
+                
+                res = ""
+                for tr in trs:
+                    for td in tds:
+                        if "eXVyON" in str(td) and str(td) in str(tr):
+                            price = str(td.text)
+                            while True:
+                                if "$" not in price and "*" not in price:
+                                    try:
+                                        price = price.replace(",", "")
+                                    except:
+                                        pass
+                                    break
+                           
+                                if "$" in price or "*" in price:
+                                    price = manual_replace(price, '', 0)
+                                    
+                            price = float(price)
+                            if price not in re:
+                                re.append(price)
+                re = sorted(re, key = float)
+                dicts = get_dicts(re, trs, tds)
+                s = dicts.values()
+                for val in s:
+                    for tr in val:
+                        if str(tr) not in res:
+                            res = res + str(tr)
+                    
+                
+            if mode == "descending":
+                dicts = {}
+                tr_list = []
+                res = ""
+                for tr in trs:
+                    for td in tds:
+                        if "eXVyON" in str(td) and str(td) in str(tr):
+                            price = str(td.text)
+                            while True:
+                                if "$" not in price and "*" not in price:
+                                    try:
+                                        price = price.replace(",", "")
+                                    except:
+                                        pass
+                                    break
+                           
+                                if "$" in price or "*" in price:
+                                    price = manual_replace(price, '', 0)
+                                    
+                            price = float(price)
+                            if price not in re:
+                                re.append(price)
+                re.sort(reverse = True)
+                dicts = get_dicts(re, trs, tds)
+                s = dicts.values()
+                for val in s:
+                    for tr in val:
+                        if str(tr) not in str(res):
+                            res = res + str(tr)
+                
+            res = "<table>"+str(res_t) + res + "</table>"
+            if mode == "normal":
+                res = res_first
+        except Exception as e:
+            res = res_first
+            print(str(e))
+            pass
+    return render_template('response.html', res = res) 
+    
+   
+def check_c(curr):
+    global source
+    if curr == "":
+        session['currency'] = random.choice(source)
+ 
 @app.route('/filter')
+@app.route('/dashboard', methods =['GET', 'POST'])
 @app.route('/', methods =['GET', 'POST'])
 def home():
 	if session.get("loggedin") == None or session.get("loggedin") == "None":
@@ -245,36 +669,25 @@ def home():
 	global s
 	global currency
 	global pir
-	source = []
-	driver.get("https://coinmarketcap.com")
-	time.sleep(1)
+	global res;global msge
 	
-	vx = driver.find_elements(By.TAG_NAME, "a")
-	time.sleep(1)
-	for v in vx:
-		if "https://coinmarketcap.com/currencies/" in str(v.get_attribute('href')):
-			k = str(v.get_attribute('href'))
-			k = k.replace("https://coinmarketcap.com/currencies/", "")
-			k = k.split('/')
-			if k[0] not in source:
-				source.append(k[0])
-	pir = ""
+	source = ['bitcoin', 'ethereum', 'tether', 'usd-coin', 'bnb', 'binance-usd', 'xrp', 'cardano', 'dogecoin', 'polygon', 'polkadot-new', 'multi-collateral-dai', 'shiba-inu', 'solana', 'tron', 'litecoin', 'uniswap', 'unus-sed-leo', 'wrapped-bitcoin', 'avalanche', 'chainlink', 'cosmos', 'ethereum-classic', 'monero', 'stellar', 'toncoin', 'algorand', 'bitcoin-cash', 'cronos', 'chiliz', 'near-protocol', 'filecoin', 'vechain', 'quant', 'flow', 'okb', 'hedera', 'internet-computer', 'chain', 'elrond-egld', 'terra-luna', 'apecoin-ape', 'eos', 'paxos-standard', 'tezos', 'theta-network', 'the-sandbox', 'trueusd', 'aave', 'trust-wallet-token', 'decentraland', 'bitcoin-sv', 'usdd', 'kucoin-token', 'huobi-token', 'axie-infinity', 'maker', 'zcash', 'neutrino-usd', 'gemini-dollar', 'iota', 'bitdao', 'bittorrent-new', 'ecash', 'aptos', 'pancakeswap', 'pax-gold', 'synthetix', 'klaytn', 'neo', 'fantom', 'binaryx', 'fei-usd', 'mina', 'the-graph', 'thorchain', 'dash', 'nexo', 'gatetoken', 'ethereum-pow', 'lido-dao', 'gmx', 'basic-attention-token', 'arweave', 'loopring', '1inch', 'xinfin', 'helium', 'stacks', 'osmosis', 'enjin-coin', 'zilliqa', 'casper', 'nem', 'decred', 'compound', 'kava', 'immutable-x', 'curve-dao-token', 'holo', 'convex-finance', 'ravencoin', 'ethereum-name-service', 'bitcoin-gold', 'waves', 'balancer', 'green-metaverse-token', 'theta-fuel', 'iotex', 'yearn-finance', 'oasis-network', 'gnosis-gno', 'qtum', 'terrausd', 'celo', 'swissborg', 'golem-network-tokens', 'optimism-ethereum', 'ankr', 'kusama', 'terra-luna-v2', 'polymath-network', 'abbc-coin', 'gala', 'just', 'kadena', 'symbol', 'livepeer', 'harmony', 'chia-network', 'reserve-rights', 'hive-blockchain', 'omg', 'moonbeam', '0x', 'iostoken', 'amp', 'sushiswap', 'dogelon', 'ontology', 'threshold', 'icon', 'bora', 'audius', 'wootrade', 'siacoin', 'astar', 'yearn-finance-ii', 'storj', 'wax', 'zel', 'apenft', 'dydx', 'injective', 'sxp', 'horizen', 'celsius', 'render-token', 'ribbon-finance', 'uma', 'constitutiondao', 'ssv-network', 'braintrust', 'energy-web-token', 'secret', 'digibyte', 'smooth-love-potion', 'bone-shibaswap', 'kyber-network-crystal-v2', 'skale-network', 'voyager-token', 'lisk', 'tribe', 'playdapp', 'civic', 'pundix-new', 'mxc', 'medibloc', 'synapse-2', 'wink', 'nervos-network', 'rlc', 'mx-token', 'request', 'prom', 'ontology-gas', 'ceek-vr', 'metisdao', 'api3', 'celer-network', 'coti', 'nano', 'mask-network', 'ocean-protocol', 'aragon', 'btc-standard-hashrate-token', 'ren', 'keep-network', 'persistence', 'syscoin', 'hex', 'wrapped-tron', 'steth', 'frax', 'wbnb', 'bitcoin-bep2', 'bittorrent', 'huobi-btc', 'ftx-token', 'tether-gold', 'wemix', 'gensokishis-metaverse', 'counos-x', 'nxm', 'defichain', 'fruits-eco', 'sonm-bep20', 'liquity-usd', 'safe', 'link', 'rocket-pool', 'veritaseum', 'bitrise-token', 'baby-doge-coin', 'stasis-euro', 'zeon', 'telcoin', 'hi-dollar', 'kaspa', 'vvs-finance', 'venus-usdc', 'usdx-kava', 'hashflow', 'lukso', 'ergo', 'dexe', 'sologenic', 'deso', 'avinoc', 'creditcoin', 'centrifuge', 'status', 'dao-maker', 'humanscape', 'nucypher', 'volt-inu-v2', 'mdex', 'radio-caca', 'frax-share', 'funtoken', 'mvl', 'glitzkoin', 'ardor', 'everscale', 'bifrost', 'function-x', 'bancor', 'wrapped-everscale', 'power-ledger', 'illuvium', 'orbs', 'spell-token', 'vulcan-forged-pyr', 'shentu', 'steem', 'dent', 'pirate-chain', 'cartesi', 'h2o-dao', 'numeraire', 'phala-network', 'morpheus-network', 'anyswap', 'stratis', 'ultra', 'marblex', 'iq', 'biconomy', 'aelf', 'reef', 'rakon', 'chromia', 'band-protocol', 'lazio-fan-token', 'origintrail', 'loom-network', 'terran-coin', 'conflux-network', 'looksrare', 'wazirx', 'constellation', 'renbtc', 'serum', 'augur', 'venus-busd', 'safepal', 'stargate-finance', 'polymesh', 'xyo', 'richquack-com', 'biswap', 'acala', 'nest-protocol', 'vai', 'cvault-finance', 'orchid', 'quarkchain', 'liquity', 'rsk-smart-bitcoin', 'radicle', 'joe', 'onus', 'chrono-tech', 'singularitynet', 'nkn', 'orbit-chain', 'insure', 'xsgd', 'coin98', 'velas', 'dero', 'origin-protocol', 'stormx', 'wrapped-velas', 'uquid-coin', 'dodo', 'alchemy-pay', 'galxe', 'chainbing', 'origin-dollar', 'telos', 'aergo', 'susd', 'standard-tokenization-protocol', 'clash-of-lilliput', 'magic-token', 'ampleforth', 'venus', 'metal', 'divi', 'axel', 'aurora-near', 'seedify-fund', 'celo-dollar', 'aavegotchi', 'mobilecoin', 'vethor-token', 'adshares', 'moonriver', 'efinity', 'utrust', 'ampleforth-governance-token', 'fetch', 'revain', 'sun-token', 'metadium', 'dawn-protocol', 'mainframe', 'rss3', 'beta-finance', 'wirex-token', 'somesing', 'conun', 'euro-coin', 'alien-worlds', 'whitecoin', 'santos-fc-fan-token', 'mstable-usd', 'vegaprotocol', 'enzyme', 'xcad-network', 'maidsafecoin', 'fc-porto', 'moviebloc', 'ark', 'bitmax-token', 'hedgetrade', 'metacraft', 'maple', 'electroneum', 'alpha-finance-lab', 'krypton-dao', 'superfarm', 'perpetual-protocol', 'propy', 'gamefi', 'strike', 'verge', 'myneighboralice', 'mobox', 'bloktopia', 'dusk-network', 'defi-pulse-index', 'thundercore', 'rally', 'barnbridge', 'boba-network', 'rsk-infrastructure-framework', 'saitama-inu-new', 'bakerytoken', 'bitcicoin', 'rai-finance-sofi', 'locus-chain', 'celo-euro', 'efforce', 'neblio', 'alpine-f1-team-fan-token', 'husd', 'ankreth', 'polkastarter', 'deapcoin', 'rarible', 'world-mobile-token', 'arpa-chain', 'radix', 'gods-unchained', 'splintershards', 'lcx', 'kunci-coin', 'alpaca-finance', 'idex', 'smartofgiving', 'marlin', 'venus-usdt', 'klever', 'cocos-bcx', 'forta', 'ufo-gaming', 'keep3rv1', 'coinex-token', 'travala', 'badger-dao', 'astrafer', 'lto-network', 'argentinefootballassociationfantoken', 'yooshi', 'sweat-economy', 'mint-marble', 'brazil-national-football-team-fan-token', 'bounce-token', 'orion-protocol', 'cobak-token', 'reserve', 'gxchain', 'ethernity-chain', 'usdk', 'alchemix', 'proton', 'aeternity', 'aioz-network', 'phoenix-global-new', 'nvirworld', 'groestlcoin', 'mines-of-dalarnia', 'tomochain', 'stream-coin', 'litentry', 'star-link', 'hunt', 'dkargo', 'ichi', 'linear', 'wanchain', 'verasity', 'tokenpocket', 'dia', 'tellor', 'clover', 'yield-guild-games', 'raydium', 'ultiledger', 'tokenlon-network-token', 'paris-saint-germain-fan-token', 'komodo', 'refereum', 'flamingo', 'beefy-finance', 'moss-coin', 'star-atlas', 'choise', 'ethereum-swarm', 'wrapped-kardiachain', 'steem-dollars', 'carry', 'bitcoin-diamond', 'ellipsis', 'coinloan', 'monacoin', 'sentinel-protocol', 'bitshares', 'troy', 'covalent', 'elitium', 'gitcoin', 'rei-network', 'unifi-protocol-dao', 'defigram', 'cult-dao', 'portugal-national-team-fan-token', 'prosper', 'firmachain', 'elastos', 'tokocrypto', 'kardiachain', 'coinpoker', 'battle-world', 'fc-barcelona-fan-token', 'qredo', 'terra-virtua-kolect', 'ramp', 'veruscoin', 'gas', 'milk-alliance', 'kin', '1eco', 'alpha-quark-token', 'akash-network', 'fio-protocol', 'harvest-finance', 'kiltprotocol', 'viberate', 'onbuff', 'dxdao', 'rmrk', 'bluzelle', 'airdao', 'hard-protocol', 'manchester-city-fan-token', 'benqi', 'meverse', 'guild-of-guardians', 'gomining-token', 'streamr', 'petals', 'unibright', 'mango-markets', 'metahero', 'firo', 'bella-protocol', 'gyen', 'irisnet', 'contentos', 'truefi-token', 'hermez-network', 'boson-protocol', 'terra-krw', 'wing', 'xmon', 'anchor-protocol', 'adx-net', 'jasmy', 'callisto-network', 'frontier', 'nuls', 'syntropy', 'merit-circle', 'adventure-gold', 'burger-cities', 'quickswap', 'circuits-of-value', 'centrality', 'selfkey', 'automata-network', 'decentral-games', 'bytom', 'mantra', 'goldfinch-protocol', 'tokemak', 'ahatoken', 'wrapped-nxm', 'phantasma', 'cortex', 'pivx', 'pitbull', 'trustswap', 'venus-xvs', 'vite', 'stafi', 'latoken', 'platon', 'wilder-world', 'waltonchain', 'chimpion', 'vidt-datalink', 'dforce', 'airswap', 'student-coin', 'alethea-artificial-liquid-intelligence-token', 'fusion', 'amo-coin', 'presearch', 'aleph-im', 'lever', 'beam', 'deversifi', 'saito', 'map-protocol', 'voxies', 'bitmart-token', 'nestree']
 	if request.method == 'POST' and "pair" in request.form:
 		currency = request.form['currency']
-		pir = request.form['pair']
-	#load(currency)
-	if currency == "":
-		if session.get('currency') is not None:
-			currency = session['currency']
-		else:
-			currency = random.choice(source)
+		pir = request.form['pair'];check_c(currency)
+		if currency != session['currency']:
 			session['currency'] = currency
+			pir = 	None
+			load(session['currency'], pir)
+		else:
+			load(session['currency'], pir)
 	else:
+		currency = random.choice(source)
 		session['currency'] = currency
-	#print(currency)
-	load(driver, currency, pir)
-	return render_template('index.html', currency = session['currency'], urls = source, n = len(s), m = len(p), pairs = pair, pir=pir, p = p, s = s)
-def load(driver, crc, pir):
+		pir = None
+		load(currency, pir)
+	msge = fetch_message(session['username']);return render_template('index.html', currency = session['currency'], urls = source, n = len(s), m = len(p), pairs = pair, pir=pir, p = p, s = s, res = res, msge = msge)
+def load(crc, pir):
 	global source
 	global url
 	global pair
@@ -283,105 +696,118 @@ def load(driver, crc, pir):
 	global p
 	global src
 	global pr
+	global res
+	global res_first
+	global new_res
 	src = []
 	pr = []
 	count = 0
 	cont = 0
 	p = []
 	s = []
-	#pair = []
-	while True:	
-		if count == 1 or count > 1:
-			load_file = "error404.html"
-			break
-		count += 1	
+	try:	
 		url = "https://coinmarketcap.com/currencies/"+crc+"/"
-		driver.get(url)	
+		#driver.get(url)	
 		#driver.execute_script("window.scrollTo(0, 1700)")
-		time.sleep(1)	
-		vx = driver.find_elements(By.TAG_NAME, "a")
+		#time.sleep(1)	
+		#vx = driver.find_elements(By.TAG_NAME, "a")
 		#page_source = requests.get(url+"markets/") 
-		try:
-			driver.find_element("xpath", "//div[@class='']").click()
-			break
-		except:
-			pass
+		#try:
+			#driver.find_element("xpath", "//div[@class='container routeSwitcher']/span/a[2]").click()
+			#break
+		#except:
+			#pass
 		driver.get(url+"markets/")
-		time.sleep(3)
+		time.sleep(1)
 		
-		#driver.refresh()
-		if pir == "":
-			driver.execute_script("window.scrollTo(0, 1500)")
+		sup = "<table class='sc-853bfcae-2 hjvLSS cmc-table  '>"
+		if pir is None or pir == "null" or pir == None:
+			driver.execute_script("window.scrollTo(0, 1500)");
 			while True:
 				try:
-					table = driver.find_element("xpath", '//div[@class="h7vnx2-1 kUATHk"]')
-					soup = table.get_attribute('innerHTML') 
-					time.sleep(2)
+					time.sleep(1)
+					table = driver.find_element("xpath", '//table') 
+					sup = sup + table.get_attribute('innerHTML') + "</table>"
 					break
-				except:
-					pass	
-					
-			text_file = open("login/templates/file.html", "w")
-			text_file.write(soup)
-			text_file.close()
-			try:
-				os.remove('login/templates/load.html')
-			except:
-				pass
-			ft = open("login/templates/load.html", "a+")
-			ft.write("<table>")
-			with open('login/templates/file.html', 'r') as f:
-				contents = f.read();pair = []
+				except Exception as e:
+					pass
+			soup = BeautifulSoup(sup, 'html.parser')
+			tr = soup.findAll('a')
+			for t in tr:
+				if "binance" in str(t['href']):
+					t['href'] = ("https://www.binance.me/en/activity/referral-entry/CPA?fromActivityPage=true&ref=CPA_00RSB100UL")
+				if "kucoin" in str(t['href']):
+					t['href'] = ("https://www.kucoin.com/r/rf/rJSD9K2")
+				if "poloniex" in str(t['href']):
+					t['href'] = ("https://m.poloniex.com/signup?c=2GLVHNQQ")
+				if "ruyiwallet" in str(t['href']):
+					t['href'] = ("https://www.ruyiwallet.com/ucenter/web/invite?invite_code=9jWZLM")
+				if "mexc" in str(t['href']):
+					t['href'] = ("https://m.mexc.com/auth/signup?inviteCode=1V5Ep")
+				if "hotbit" in str(t['href']):
+					t['href'] = ("https://www.hotbit.io/register?ref=2260175")
+			new_res = str(soup)
+			#ft = open("login/templates/load.html", "w");
+			res = "<table>"
+			pair.clear()
+			#with open('login/templates/file.html', 'r') as f:
+			contents = new_res;
 
-				sup = BeautifulSoup(contents, 'html.parser');ft.write(str(sup.tr))
-				for child in sup.recursiveChildGenerator():
-					if child.name == "tr":
-						if "Recently" in child.text:
-							ft.write(str(child))
-						if "Loading data" in child.text:
-							load_file = "error404.html"
-							break
-				li = sup.findAll('a')
-				for l in li:
-                
-					if "/" in str(l.text) and str(l.text) not in pair:
-						pair.append(str(l.text))
-				ft.write("</table>")
-				ft.close()
-			load_file = "load.html"
+			sup = BeautifulSoup(contents, 'html.parser')
+			res = res+"\n"+str(sup.tr)
+			for child in sup.recursiveChildGenerator():
+				if child.name == "tr":
+					if "Recently" in child.text:
+						#ft.write(str(child));
+						res = res+"\n"+str(child)
+					if "Loading data" in child.text:
+						load_file = "error404.html";
+						break
+			tr = sup.findAll('a')
+			for t in tr:
+				if "/" in str(t.text) and str(t.text) not in pair:
+					pair.append(str(t.text))
+
+			res = res + "</table>"
+			if "<a" not in res:
+				load(session['currency'], "null")
+			res_first = res 
+			return
 		else:
-			#try:
-			os.remove('login/templates/loadpair.html')
-			ft = open("login/templates/loadpair.html", "a+")
-			#table = driver.find_element("xpath", "//div[@class='h7vnx2-1 kUATHk']")
-			with open('login/templates/load.html', 'r') as f:
-				contents = f.read();count = 0;
-				sup = BeautifulSoup(contents, 'html.parser')
-				li = sup.findAll('td')
-				tr = sup.findAll('tr')
-				for l in li:
-					k = l.previous_sibling
-					if pir == str(l.text):
-						f = l.find_next_sibling("td");count += 1; 
-						g = str(f.text)
-						g = manual_replace(g, '', 0);pr.append(g);src.append(str(k.text))
-						#if f is not None or f != "None":
-						p.append(g)
-						s.append(str(l.text))
-				ft.write("<table><tbody>")
-				ft.write(str(sup.tr))
-				for t in tr:
-					if pir in str(t.text):
-						cont = 1
-						ft.write(str(t))
-				if(cont == 0):		
-					ft.write("<center><p style='font-size: 20px;margin-top: 5%;'>No data found from pair</p></center>")
-				ft.write("</tbody></table>")
-				ft.close()
-				load_file = "loadpair.html"
-		return
-		driver.close()
-		break
+			if "<a" not in res_first:
+				load(session['currency'], "null")
+			contents = res_first;count = 0;
+			sup = BeautifulSoup(contents, 'html.parser')
+			li = sup.findAll('td')
+			tr = sup.findAll('tr')
+			for l in li:
+				k = l.previous_sibling;f = l.find_next_sibling("td");
+				if pir == str(l.text):
+					#print(str(f.text))
+					g = str(f.text);
+					if "," in g:
+						g = g.replace(",", "")
+					while True:
+						if '*' in g or '$' in g:
+							g = manual_replace(g, '', 0)
+						if '*' not in g and '$' not in g:
+							break
+					p.append(g);pr.append(g);src.append(str(k.text))
+					s.append(str(l.text))
+			res = "<table><tbody>"
+			res = res+"\n"+str(sup.tr)
+			for t in tr:
+				if pir in str(t.text):
+					cont = 1
+					res = res+"\n"+str(t)
+			if(cont == 0):		
+				res = res+"\n<center><p style='font-size: 20px;margin-top: 5%;'>No data found from pair</p></center>"
+			res = res+"\n</tbody></table>"
+			#ft.close()
+			return
+	except Exception as e:
+	    load_file = "error404.html";print(str(e))
+	    pass
 @app.route('/settings',methods =['GET', 'POST'])
 def settings():
 	if session.get("loggedin") == None or session.get("loggedin") == "None":

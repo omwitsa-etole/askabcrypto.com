@@ -178,7 +178,7 @@
 	margin-left: 5%;
 	
 	width: 90%;
-	height: 65%;
+	height: 60%;
 	resize: none;
 }
 .msg-box button{

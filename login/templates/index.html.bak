@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>CoinMarketCap</title>
+<title>AskaboutCrypto - Dashboard</title>
 <style>
 body{
 	overflow: auto;
@@ -23,6 +23,7 @@ body{
 	background: white;
 	margin-bottom: 2%;
 	position: relative;
+	font-size: 11px;
 }
 
 .table{
@@ -82,9 +83,8 @@ body{
 
 #m3{
 	position: absolute;
-	top: 30%;
-	right: 2%;
-	margin-top: 7px;
+	bottom: 5%;
+	left: 3%;
 	font-size: 18px;
 	color: red;
 	cursor: pointer;
@@ -244,12 +244,59 @@ body{
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+#succ{
+	position: fixed;
+	top: 0;
+	left: 30%;
+	z-index: 100;
+	width: 35%;
+	height: 40px;
+	color: white;
+	font-sizze: 18px;
+	background: green;
+	border-radius: 4px; 
+	overflow: hidden;
+}
+.view-message{
+	display: none;
+	position: fixed;
+	top: 15%;
+	left: 30%;
+	z-index: 99;
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+	width: 45%;
+	height: 50%;
+	overflow: auto;
+	border-radius: 10px;
+	background: white;
+}
+.msg-box{
+	width: 95%;
+	height: 60px;
+	overflow: auto;
+	margin-left: 2.5%;
+	margin-top: 2%;
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+	cursor: pointer;
+	background: white;
+	position: relative;
+}
+.msg-box:hover{
+	box-shadow: rgba(80, 80, 103, 0.65) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+form select{
+	margin-left: 10%;
+}
 </style>
 </head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://use.fontawesome.com/4f05e2c5d5.js"></script>
 </head>
 <body>
+
+{% if msge != "none" %}
+	<div id="succ">{{msge}}<button onclick="viewMessage()">view</button><a style="float: right;color: red;cursor: pointer;" onclick="this.parentElement.style.display='none'">x</a></div>
+{% endif %}
 <div class="sidebar-container">
     <ul class="sidebar-navigation">
       <li></li>
@@ -267,10 +314,11 @@ body{
       </li>
       <li></li>
       <li>
-        <a id="m2" href="{{ url_for('fetcher') }}"  class="nav-link">
-          <i class="fa fa-gear"></i> Others
+        <a id="m2" href="{{ url_for('other') }}"  class="nav-link">
+          <i class="fa fa-gear"></i> GEMS
         </a>
       </li>
+	  <a id="m3" href="{{ url_for('logout') }}"><i class="fa fa-signout" aria-hidden="true"></i>logout</a>
     </ul>
   </div>
 <div class="profile">
@@ -296,16 +344,25 @@ body{
 {% endfor%}
 </select>
 <button type="submit" onsubmit="return fetchData()" style="margin-left: 2%;" id="to_click">Submit</button><a onclick="refresh()" id="rf"><i class="fa fa-refresh fa-2x"></i></a>
+<select onchange="resFilter(this.value)"><option value="normal">--order by--</option>
+<option value="ascending">Ascending</option>
+<option value="descending">Descending</option>
+<select>
 </h1>
+
 </form>
-<a id="m3" href="{{ url_for('logout') }}"><i class="fa fa-signout" aria-hidden="true"></i>logout</a>
+
 </div>
 <div class="page_load" id="page_load">
-<div id="loadingDiv" class="loader"></div>
+{{ res|safe }}
 </div>
 <div class="page_load ii" id="page_load2">
 <div id="loadingDiv2" class="loader"></div>
 
+</div>
+<div class="view-message" id="view-message">
+<a style="float: right;color: red;cursor: pointer;" onclick="this.parentElement.style.display='none'">x</a>
+<div style="height: 98%;width: 100%;margin-top: 1%;" id="msg-load"></div>
 </div>
 </body>
 <script>
@@ -317,20 +374,22 @@ $(document).ready(function() {
 	//$("#page_load2").load("{{ url_for('fetcher') }}");
 	$.ajaxSetup({async: false});
 	//$.post('/', {currency:'', pair:''});
-	$("#page_load").load("{{ url_for('loader') }}");
 	$("#page_load2").load("{{ url_for('table_load') }}");
-	//$("#page_load2").load("error404.html");
-	refresh();
+	sleep(3000).then(() => {
+		refresh();
+	})
+	
+	//refresh();
 });
-var $loading = $('#loadingDiv').hide();
+//var $loading = $('#loadingDiv').hide();
 var $loading2 = $('#loadingDiv2').hide();
 $(document)
   .ajaxStart(function () {
-    $loading.show();
+    //$loading.show();
     $loading2.show();
   })
   .ajaxStop(function () {
-    $loading.hide();
+   // $loading.hide();
     $loading2.hide();
   });
 window.onclick = function(event) {
@@ -347,7 +406,7 @@ function loadpage(){
 	var cur = document.getElementById("hcur");
 	var pr = document.getElementById("pair");
 	$.ajaxSetup({async: false});
-	$("#page_load").load("{{ url_for('loader') }}");
+	//$("#page_load").load("{{ url_for('loader2') }}");
 	//$.ajaxSetup({async: false});
 	$("#page_load2").load("{{ url_for('table_load') }}");
 	console.log("{{currency}}")
@@ -357,7 +416,7 @@ function loadpage(){
 }
 function refresh(){
 	//$.post('/', {currency:'{{currency}}', pair:''});
-	$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load").load("{{ url_for('fetcher') }}");
 	$("#page_load2").load("{{ url_for('fetcher') }}");
 	sleep(2000).then(() => {
 		loadpage();
@@ -366,7 +425,7 @@ function refresh(){
 function fetchData(){
 	var cur = document.getElementById("currency");
 	var pr = document.getElementById("pair");
-	$("#page_load").load("{{ url_for('fetcher') }}");
+	//$("#page_load").load("{{ url_for('fetcher') }}");
 	$("#page_load2").load("{{ url_for('fetcher') }}");
 	return true;
 }
@@ -378,6 +437,18 @@ function menuClick(id, val){
 	var y = document.getElementById(id);
 	//y.cassList.add("active");
 	window.location = val;
+}
+function viewMessage(){
+	var x = document.getElementById("view-message");
+	$("#msg-load").load("/message/{{ session['username']}}");
+	x.style.display = 'block';
+}
+function resFilter(mode){
+	$("#page_load").load("{{ url_for('fetcher') }}");
+	sleep(1000).then(() => {
+		$("#page_load").load("/res/"+mode);
+	})
+	
 }
 </script>
 </html>

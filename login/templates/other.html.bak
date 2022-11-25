@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>CoinMarketCap</title>
+<title>Askaboutcrypto</title>
 <style>
 body{
 	overflow: auto;
@@ -14,7 +14,7 @@ body{
 	margin-top: 10%;
 	width: 89%;
 	margin-left: 11%;
-	height: 400px;
+	height: 500px;
 	max-height: 800px;
 	overflow: auto;
 	overflow-x: auto;
@@ -22,6 +22,7 @@ body{
 	background: white;
 	margin-bottom: 2%;
 	position: relative;
+	font-size: 11px;
 }
 
 .table{
@@ -247,6 +248,19 @@ body{
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.coin-logo{display: none;}
+.stickyTop{
+	position: sticky;
+  top: 0px;
+  margin-bottom: 4px;
+  background: white;
+}
+.sc-1ow4cwt-0 iosgXe{
+	display: none;
+}
+.iosgXe{
+	display: none;
+}
 </style>
 </head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -258,7 +272,7 @@ body{
       <li></li>
       <li></li>
       <li>
-        <a id="m1" href="{{ url_for('re_home') }}"  data-toggle="pill" class="nav-link">
+        <a id="m1" href="{{ url_for('home') }}"  data-toggle="pill" class="nav-link">
           <i class="fa fa-home" aria-hidden="true"></i>Dashboard
         </a>
       </li>
@@ -286,7 +300,7 @@ body{
 </div>
 <div class="search">
 <form method="POST" id="fm" onsubmit="return fetchData()">
-Max cap amount: <input type="number" placeholder="enter market cap to filter">
+Max cap amount: <input type="number" placeholder="filter market cap in dollars" name="cap">
 
 <button type="submit" onsubmit="return fetchData()" style="margin-left: 2%;" id="to_click">Submit</button><a onclick="refresh()" id="rf"><i class="fa fa-refresh fa-2x"></i></a>
 </h1>
@@ -294,7 +308,7 @@ Max cap amount: <input type="number" placeholder="enter market cap to filter">
 <a id="m3" href="{{ url_for('logout') }}"><i class="fa fa-signout" aria-hidden="true"></i>logout</a>
 </div>
 <div class="page_load" id="page_load">
-<div id="loadingDiv" class="loader"></div>
+{{ capped|safe }}
 </div>
 </div>
 </body>
@@ -303,20 +317,9 @@ function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
    }
 $(document).ready(function() {
-    $("#page_load").load("{{ url_for('fetcher') }}");
-    sleep(2000).then(() => {
-		$("#page_load").load("{{ url_for('cap') }}");
-	})
-	
+   	
 });
-var $loading = $('#loadingDiv').hide();
-$(document)
-  .ajaxStart(function () {
-    $loading.show();
-  })
-  .ajaxStop(function () {
-    $loading.hide();
-  });
+
 window.onclick = function(event) {
 	if (!event.target.matches('.fa')) {
 		var x = document.getElementsByClassName('profile_options');
@@ -329,10 +332,9 @@ window.onclick = function(event) {
 }
 function refresh(){
 	//$.post('/', {currency:'{{currency}}', pair:''});
-	$("#page_load").load("{{ url_for('fetcher') }}");
 	//$("#page_load2").load("{{ url_for('fetcher') }}");
-	sleep(2000).then(() => {
-		$("#page_load").load("{{ url_for('cap') }}");
+	sleep(2500).then(() => {
+		//$("#page_load").load("{{ url_for('cap') }}");
 	})
 }
 function fetchData(){
